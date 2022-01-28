@@ -4,19 +4,25 @@ import json
 import itertools
 import os
 import pulsar
+import argparse
 from ratelimiter import RateLimiter
 from dotenv import load_dotenv
 
-from fake_reviews import createReview
-
-RATE_PER_SECOND = 10
-
-MAX_NUM = 20     # None
+from fake_reviews import createReview, initRandom
 
 load_dotenv()
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='Generate and publish fake reviews according to a pattern'
+    )
+    parser.add_argument('-r', '--rate', help='rate per second', default=10, type=int)
+    parser.add_argument('-n', '--number', help='max number of messages', default=None, type=int)
+    parser.add_argument('-s', '--seed', help='random seed', default=123, type=int)
+    args = parser.parse_args()
+
+    initRandom(args.seed)
 
     # init connection
     PULSAR_CLIENT_URL = os.environ['PULSAR_CLIENT_URL']
@@ -32,7 +38,7 @@ if __name__ == '__main__':
     producer = client.create_producer(streamingTopic)
 
     # loop and publish
-    rLimiter = RateLimiter(max_calls=RATE_PER_SECOND, period=0.05)
+    rLimiter = RateLimiter(max_calls=args.rate, period=0.05)
     for idx in itertools.count():
         with rLimiter:
             msg = createReview(idx)
@@ -40,5 +46,5 @@ if __name__ == '__main__':
             print('* %i ... ' % idx, end ='')
             producer.send(msg.encode('utf-8'))
             print('[%s]' % msg)
-        if MAX_NUM is not None and idx >= MAX_NUM - 1:
+        if args.number is not None and idx >= args.number - 1:
             break

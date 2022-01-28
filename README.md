@@ -64,8 +64,26 @@ Go to the in-container bash again:
 
 (by the way, you would delete it with `./bin/pulsar-admin functions delete --tenant public --namespace default --name rrouter-function`).
 
-### notes
+### Setup and testing
 
-test reading is in `tools`: `./reader.py`, but check the topic defined in the script.
+_All this outside of Docker. Mind that this is a very basic and approximate "test"._
 
-generation of sample data has now 1 item creation for testing
+Check the `.env.sample`, copy it to `.env` and make sure of its config. In particular, the IP address of the container
+(`docker inspect $CONTAINER_ID`). The rest should be ok.
+
+Also create a Python3 virtualenv or anyway install the dependencies in `requirements.txt`.
+
+As a mini test of the above function, you can run the following in two shells:
+
+```
+    # one shell:
+    ./tools/reader.py -t rr-restaurant-reviews      # Ctrl-C to stop it
+
+    # and now in another shell you generate a handful of reviews:
+    ./review_generator/review_generator.py -r 2 -n 10
+```
+
+You should see restaurant-only (normalized, cleaned) reviews being printed in the
+first shell (as they are consumed from the topic the function is routing messages to).
+
+### 

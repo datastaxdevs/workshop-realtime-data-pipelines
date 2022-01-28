@@ -7,9 +7,6 @@ import os
 from dotenv import load_dotenv
 
 
-TOPIC = 'rr-hotel-reviews'
-# TOPIC = 'rr-restaurant-reviews'
-
 load_dotenv()
 
 

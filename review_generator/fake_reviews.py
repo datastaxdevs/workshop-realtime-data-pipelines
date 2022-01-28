@@ -6,9 +6,6 @@ import random
 from words import wordMap
 
 
-# random.seed(time.time())
-random.seed(123.456)
-
 NORMALOID_K = 1.4
 
 targets = [
@@ -49,6 +46,13 @@ def _permute(lst):
         lst1 += [lst0[idx]]
         lst0 = lst0[:idx] + lst0[idx+1:]
     return lst1
+
+
+def initRandom(seed=None):
+    if seed is not None:
+        random.seed(seed)
+    else:
+        random.seed(int(time.time()))
 
 
 def makeText(score, trollish):
