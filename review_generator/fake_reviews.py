@@ -27,7 +27,8 @@ users = [
 
 
 def _normaloid(x, K):
-    # x in [0:1], result is normaloid in [-1:1]
+    # K must be < PI/2. The closer it is = the sharper the peak
+    # x uniform in [0:1], result is normaloid in [-1:1]
     return math.tan(K*(2*x-1))/math.tan(K)
 
 

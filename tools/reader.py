@@ -3,6 +3,7 @@
 import pulsar
 import argparse
 import sys
+import atexit
 import os
 from dotenv import load_dotenv
 
@@ -40,6 +41,12 @@ if __name__ == '__main__':
     consumer = client.subscribe(args.topic,
                                 subscription_name=args.subscription)
 
+    @atexit.register
+    def close_pulsar():
+        print('Closing Pulsar resources')
+        consumer.close()
+        client.close()
+
     numReceived = 0
     while True:
         msg = receiveOrNone(consumer, 5000)
@@ -52,5 +59,3 @@ if __name__ == '__main__':
         #
         if args.number is not None and args.number <= numReceived:
             break
-
-    client.close()

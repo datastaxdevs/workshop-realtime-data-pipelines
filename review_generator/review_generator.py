@@ -17,7 +17,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Generate and publish fake reviews according to a pattern'
     )
-    parser.add_argument('-r', '--rate', help='rate per second', default=10, type=int)
+    parser.add_argument('-r', '--rate', help='rate per 0.05 seconds', default=10, type=int)
     parser.add_argument('-n', '--number', help='max number of messages', default=None, type=int)
     parser.add_argument('-s', '--seed', help='random seed', default=123, type=int)
     args = parser.parse_args()

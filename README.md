@@ -64,7 +64,7 @@ Go to the in-container bash again:
 
 (by the way, you would delete it with `./bin/pulsar-admin functions delete --tenant public --namespace default --name rrouter-function`).
 
-### Setup and testing
+### Setup and testing so far
 
 _All this outside of Docker. Mind that this is a very basic and approximate "test"._
 
@@ -76,14 +76,31 @@ Also create a Python3 virtualenv or anyway install the dependencies in `requirem
 As a mini test of the above function, you can run the following in two shells:
 
 ```
-    # one shell:
-    ./tools/reader.py -t rr-restaurant-reviews      # Ctrl-C to stop it
+# one shell:
+./tools/reader.py -t rr-restaurant-reviews      # Ctrl-C to stop it
 
-    # and now in another shell you generate a handful of reviews:
-    ./review_generator/review_generator.py -r 2 -n 10
+# and now in another shell you generate a handful of reviews:
+./review_generator/review_generator.py -r 2 -n 10
 ```
 
 You should see restaurant-only (normalized, cleaned) reviews being printed in the
 first shell (as they are consumed from the topic the function is routing messages to).
 
-### 
+### Review analyzer (engine only)
+
+So far it prints to stdout. It reads from the restaurants-only topic
+and updates a state to maintain rolling averages: it is then able to
+detect outliers and (by comparing text and number score of each review)
+users who presumably are trolling.
+
+In one shell try
+
+    ./review_analyzer/review_analyzer.py -f 200 -o -r -t
+
+and then in another you launch the review generator with e.g.
+
+    ./review_generator/review_generator.py -r 50
+
+The first shell will report outliers and periodically give an update
+on its status.
+
