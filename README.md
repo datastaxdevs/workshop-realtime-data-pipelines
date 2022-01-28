@@ -1,5 +1,7 @@
 # README
 
+![Current architecture](images/current_arch.png)
+
 ## Review generation
 
 Several reviewers on several targets (restaurants, hotels, unspecified).
