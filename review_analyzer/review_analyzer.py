@@ -12,6 +12,9 @@ from ReviewState import ReviewState
 
 from settings import (
     ROLLING_AVERAGE_ALPHA,
+    TROLLISH_S_THRESHOLD,
+    TROLLISH_MIDREGION_WIDTH,
+    OUTLIER_DISTANCE,
 )
 
 
@@ -45,10 +48,27 @@ if __name__ == '__main__':
     args = parser.parse_args()
     #
     PULSAR_CLIENT_URL = os.environ['PULSAR_CLIENT_URL']
-    TOPIC = os.environ['RESTAURANT_TOPIC']
+    TENANT = os.environ['TENANT']
+    NAMESPACE = os.environ['NAMESPACE']
+    INPUT_TOPIC = os.environ['RESTAURANT_TOPIC']
+    ANOMALIES_TOPIC = os.environ['ANOMALIES_TOPIC']
+    #
     client = pulsar.Client(PULSAR_CLIENT_URL)
-    consumer = client.subscribe(TOPIC,
+    #
+    inputTopic = 'persistent://{tenant}/{namespace}/{topic}'.format(
+        tenant=TENANT,
+        namespace=NAMESPACE,
+        topic=INPUT_TOPIC,
+    )
+    consumer = client.subscribe(inputTopic,
                                 subscription_name='review-analyzer')
+    #
+    anomaliesTopic = 'persistent://{tenant}/{namespace}/{topic}'.format(
+        tenant=TENANT,
+        namespace=NAMESPACE,
+        topic=ANOMALIES_TOPIC,
+    )
+    outlierProducer = client.create_producer(anomaliesTopic)
 
     @atexit.register
     def close_pulsar():
@@ -57,8 +77,12 @@ if __name__ == '__main__':
         client.close()
 
     # Here we keep state (variables in this process, but may be a Redis or so!)
-    reviewState = ReviewState(rollingAlpha=ROLLING_AVERAGE_ALPHA)
-
+    reviewState = ReviewState(
+        rollingAlpha=ROLLING_AVERAGE_ALPHA,
+        trollishSentThreshold=TROLLISH_S_THRESHOLD,
+        trollishScoreMidregion=TROLLISH_MIDREGION_WIDTH,
+        outlierDetectionDistance=OUTLIER_DISTANCE,
+    )
 
     # we basically keep consuming and update our internal state here,
     # handing out updates now and then.
@@ -72,6 +96,11 @@ if __name__ == '__main__':
             # let's submit this review to the rolling state
             # (and get notified of whether-outlier as well)
             isOutlier = reviewState.addReview(msgBody)
+            #
+            if isOutlier:
+                outlierMessage = {k: v for k, v in msgBody.items()}
+                outlierMessage['detected_by'] = 'review_analyzer.py'
+                outlierProducer.send(json.dumps(outlierMessage).encode('utf-8'))
             #
             if args.outliers and isOutlier:
                 print('[%6i] Outlier detected: "%s" on "%s" (%0.2f)' % (
@@ -98,6 +127,4 @@ if __name__ == '__main__':
                         )
                     ))
             #
-
-
             consumer.acknowledge(msg)

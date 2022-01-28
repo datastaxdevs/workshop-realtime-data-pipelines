@@ -2,8 +2,16 @@ from sentiment import textSentiment
 
 class ReviewState(object):
 
-    def __init__(self, rollingAlpha):
+    def __init__(self, rollingAlpha, trollishSentThreshold,
+                 trollishScoreMidregion, outlierDetectionDistance):
         self.alpha = rollingAlpha
+        self.trollishSentThreshold = trollishSentThreshold
+        self.trollishScoreBounds = (
+            5 - trollishScoreMidregion/2,
+            5 + trollishScoreMidregion/2,
+        )
+        self.outlierDetectionDistance = outlierDetectionDistance
+        #
         self.rollingAverages = {}
         self.userTrolliness = {}
 
@@ -19,8 +27,8 @@ class ReviewState(object):
         # i.e. sentiment from text "opposite to" score
         sentiment = textSentiment(rText)
         isTrollish = any([
-            (sentiment > +0.1 and rScore < 4),
-            (sentiment < -0.1 and rScore > 6),
+            (sentiment > +self.trollishSentThreshold and rScore < self.trollishScoreBounds[0]),
+            (sentiment < -self.trollishSentThreshold and rScore > self.trollishScoreBounds[1]),
         ])
         if uID not in self.userTrolliness:
             self.userTrolliness[uID] = {'den': 0, 'num': 0}
@@ -37,7 +45,7 @@ class ReviewState(object):
             )
         # ... but if we think it is an outlier we notify the caller
         # (who may then take appropriate measures)
-        return abs(self.rollingAverages[tgtName] - rScore) > 3
+        return abs(self.rollingAverages[tgtName] - rScore) > self.outlierDetectionDistance
 
 
     def averages(self):

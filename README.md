@@ -93,11 +93,11 @@ and updates a state to maintain rolling averages: it is then able to
 detect outliers and (by comparing text and number score of each review)
 users who presumably are trolling.
 
-In one shell try
+In one shell, try
 
     ./review_analyzer/review_analyzer.py -f 200 -o -r -t
 
-and then in another you launch the review generator with e.g.
+and then, in another, you launch the review generator with e.g.
 
     ./review_generator/review_generator.py -r 50
 
