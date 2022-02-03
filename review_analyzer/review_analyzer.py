@@ -114,7 +114,7 @@ if __name__ == '__main__':
                     print('[%6i] Restaurant Score Summary:\n%s' % (
                         numReceived,
                         '\n'.join(
-                            '                 [%s] %32s : %0.2f   (outliers: %6i/%6i)' % (
+                            '                 [%s]   %-18s : %0.2f   (outliers: %6i/%6i)' % (
                                 k,
                                 '"%s"' % v['name'],
                                 v['average'],
@@ -125,11 +125,17 @@ if __name__ == '__main__':
                         )
                     ))
                 if args.trolls:
-                    print('[%6i] User Trolliness Score:\n                 %s' % (
+                    print('[%6i] Reviewer Summary:\n%s' % (
                         numReceived,
-                        ' / '.join(
-                            '%s:%0.2f' % (k, v)
-                            for k, v in sorted(reviewState.trollinesses().items())
+                        '\n'.join(
+                            '                 %8s : troll-score = %0.2f (outliers: %6i / %6i). Visits: %s' % (
+                                '"%s"' % k,
+                                v['trollings'] / v['hits'],
+                                v['num_outliers'],
+                                v['hits'],
+                                ', '.join('%s(%i)' % (tk, tv) for tk, tv in sorted(v['targetMap'].items())),
+                            )
+                            for k, v in sorted(reviewState.userInfo().items())
                         )
                     ))
             #

@@ -13,7 +13,8 @@ class ReviewState(object):
         self.outlierDetectionDistance = outlierDetectionDistance
         # this contains per-item rolling averages and other info
         self.targetMap = {}
-        self.userTrolliness = {}
+        # this contains per-user updated info
+        self.userMap = {}
 
     def addReview(self, review):
         """
@@ -31,37 +32,49 @@ class ReviewState(object):
             (sentiment > +self.trollishSentThreshold and rScore < self.trollishScoreBounds[0]),
             (sentiment < -self.trollishSentThreshold and rScore > self.trollishScoreBounds[1]),
         ])
-        if uID not in self.userTrolliness:
-            self.userTrolliness[uID] = {'den': 0, 'num': 0}
-        self.userTrolliness[uID]['den'] += 1
-        self.userTrolliness[uID]['num'] += 1 if isTrollish else 0
-        #
-        # we absorb this review in the rolling average in all cases ...
-        if tgtID not in self.targetMap:
-            self.targetMap[tgtID] = {
-                'average': rScore,
+        if uID not in self.userMap:
+            self.userMap[uID] = {
+                'hits': 0,
                 'num_outliers': 0,
-                'hits': 1,
-                'name': tgtName,  # let's assume it will never change
+                'trollings': 0,
+                'targetMap': {},
             }
-        else:
-            self.targetMap[tgtID]['average'] = (
-                self.alpha * rScore
-                + (1-self.alpha)*self.targetMap[tgtID]['average']
-            )
-        self.targetMap[tgtID]['hits'] += 1
-        # ... but if we think it is an outlier we notify the caller
-        # (who may then take appropriate measures)
-        isOutlier = abs(self.targetMap[tgtID]['average'] - rScore) > self.outlierDetectionDistance
-        self.targetMap[tgtID]['num_outliers'] += 1 if isOutlier else 0
+        self.userMap[uID]['hits'] += 1
+        self.userMap[uID]['trollings'] += 1 if isTrollish else 0
         #
-        return isOutlier
+        if not isTrollish:
+            # this is a valid review. Let's update this user's map
+            self.userMap[uID]['targetMap'][tgtID] = (
+                1 + self.userMap[uID]['targetMap'].get(tgtID, 0)
+            )
+            # we absorb this review in the rolling average
+            if tgtID not in self.targetMap:
+                self.targetMap[tgtID] = {
+                    'average': rScore,
+                    'num_outliers': 0,
+                    'hits': 1,
+                    'name': tgtName,  # let's assume it will never change
+                }
+            else:
+                self.targetMap[tgtID]['average'] = (
+                    self.alpha * rScore
+                    + (1-self.alpha)*self.targetMap[tgtID]['average']
+                )
+            self.targetMap[tgtID]['hits'] += 1
+            # ... but if we think it is an outlier we notify the caller
+            # (who may then take appropriate measures)
+            isOutlier = abs(self.targetMap[tgtID]['average'] - rScore) > self.outlierDetectionDistance
+            # we also update the outlier counts (per-user and per-target)
+            self.targetMap[tgtID]['num_outliers'] += 1 if isOutlier else 0
+            self.userMap[uID]['num_outliers'] += 1 if isOutlier else 0
+            #
+            return isOutlier
+        else:
+            # not an 'outlier' if outright trolling
+            return False
 
     def targetInfo(self):
         return self.targetMap
 
-    def trollinesses(self):
-        return {
-            uID: trollInfo['num']/trollInfo['den']
-            for uID, trollInfo in self.userTrolliness.items()
-        }
+    def userInfo(self):
+        return self.userMap
