@@ -9,11 +9,11 @@ from words import wordMap
 NORMALOID_K = 1.4
 
 targets = [
-    ('Golden Fork',     'restaurant',   0.00005, 0.5),
-    ('Pizza Smile',     'restaurant',   0.00007, 1.0),
-    ('VeggieParadise',  'restaurant',   0.00003, 1.5),
-    ('SleepSound',      'hotel',        0.00004, 0.0),
-    ('EatNStay',        None,           0.00002, 0.0),
+    ('gold_f', 'Golden Fork',     'restaurant',   0.00005, 0.5),
+    ('pizzas', 'Pizza Smile',     'restaurant',   0.00007, 1.0),
+    ('vegg00', 'VeggieParadise',  'restaurant',   0.00003, 1.5),
+    ('slpsnd', 'SleepSound',      'hotel',        0.00004, 0.0),
+    ('eat_st', 'EatNStay',        None,           0.00002, 0.0),
 ]
 
 
@@ -81,7 +81,7 @@ def createReview(idx):
         # let's randomize it a bit for fun and profit
         uidFieldName = ['u_id', 'user_id'][random.randint(0, 1)]
         # pick target
-        targetName, targetType, targetW, targetPhi = targets[
+        targetID, targetName, targetType, targetW, targetPhi = targets[
             random.randint(0, len(targets)-1)
         ]
         # pick user
@@ -102,6 +102,7 @@ def createReview(idx):
                 uidFieldName: userId,
                 'score': score,
                 'review_type': targetType,
+                'item_id': targetID,
                 'item_name': targetName,
                 'text': reviewText,
             }.items()

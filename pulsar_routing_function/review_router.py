@@ -33,6 +33,7 @@ class ReviewRouter(Function):
             userId = inputDict.get('user_id', inputDict.get('u_id'))
             score = inputDict['score']
             itemName = inputDict['item_name']
+            itemID = inputDict['item_id']
             reviewText = inputDict['text']
             #
             if reviewType in DST_TOPIC_MAP:
@@ -40,12 +41,13 @@ class ReviewRouter(Function):
                     'user_id': userId,
                     'r_score': score,
                     'tgt_name': itemName,
+                    'tgt_id': itemID,
                     'r_text': reviewText,
                 }
-                logger.warn('Routing "%s" review to its topic' % reviewType)
+                logger.info('Routing "%s" review to its topic' % reviewType)
                 # TODO: for now we stay schemaless on the dest topics!
                 outMessage = json.dumps(outputDict).encode()
                 context.publish(DST_TOPIC_MAP[reviewType], outMessage)
             else:
                 # no destination topic configured
-                logger.warn('No destination for this revew type')
+                logger.warn('No destination for this review type')

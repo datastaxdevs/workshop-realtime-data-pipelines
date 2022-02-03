@@ -111,11 +111,17 @@ if __name__ == '__main__':
                 ))
             if numReceived % args.frequency == 0:
                 if args.reviews:
-                    print('[%6i] Restaurant Score Summary:\n                 %s' % (
+                    print('[%6i] Restaurant Score Summary:\n%s' % (
                         numReceived,
-                        ' / '.join(
-                            '%s:%0.2f' % (k, v)
-                            for k, v in sorted(reviewState.averages().items())
+                        '\n'.join(
+                            '                 [%s] %32s : %0.2f   (outliers: %6i/%6i)' % (
+                                k,
+                                '"%s"' % v['name'],
+                                v['average'],
+                                v['num_outliers'],
+                                v['hits'],
+                            )
+                            for k, v in sorted(reviewState.targetInfo().items())
                         )
                     ))
                 if args.trolls:

@@ -11,8 +11,8 @@ class ReviewState(object):
             5 + trollishScoreMidregion/2,
         )
         self.outlierDetectionDistance = outlierDetectionDistance
-        #
-        self.rollingAverages = {}
+        # this contains per-item rolling averages and other info
+        self.targetMap = {}
         self.userTrolliness = {}
 
     def addReview(self, review):
@@ -20,6 +20,7 @@ class ReviewState(object):
             Also returns whether the review looks like an outlier or not
         """
         tgtName =   review['tgt_name']
+        tgtID =     review['tgt_id']
         rScore =    review['r_score']
         uID =       review['user_id']
         rText =     review['r_text']
@@ -36,20 +37,28 @@ class ReviewState(object):
         self.userTrolliness[uID]['num'] += 1 if isTrollish else 0
         #
         # we absorb this review in the rolling average in all cases ...
-        if tgtName not in self.rollingAverages:
-            self.rollingAverages[tgtName] = rScore
+        if tgtID not in self.targetMap:
+            self.targetMap[tgtID] = {
+                'average': rScore,
+                'num_outliers': 0,
+                'hits': 1,
+                'name': tgtName,  # let's assume it will never change
+            }
         else:
-            self.rollingAverages[tgtName] = (
+            self.targetMap[tgtID]['average'] = (
                 self.alpha * rScore
-                + (1-self.alpha)*self.rollingAverages[tgtName]
+                + (1-self.alpha)*self.targetMap[tgtID]['average']
             )
+        self.targetMap[tgtID]['hits'] += 1
         # ... but if we think it is an outlier we notify the caller
         # (who may then take appropriate measures)
-        return abs(self.rollingAverages[tgtName] - rScore) > self.outlierDetectionDistance
+        isOutlier = abs(self.targetMap[tgtID]['average'] - rScore) > self.outlierDetectionDistance
+        self.targetMap[tgtID]['num_outliers'] += 1 if isOutlier else 0
+        #
+        return isOutlier
 
-
-    def averages(self):
-        return self.rollingAverages
+    def targetInfo(self):
+        return self.targetMap
 
     def trollinesses(self):
         return {
