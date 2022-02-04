@@ -2,9 +2,9 @@
 
 ![Goal architecture](images/goal_arch.png)
 
-Persistence to Astra DB for restaurant/user data (maybe with timeseries for a plotting client, TTL)
+Persistence triggered by either number OR elapsed time
 
-A mini-API returning said data (from Astra DB)
+better readme: (1) DB and (2) showcase REST API curls to directly read off DB
 
 Avro schema in all topics except the 'raw' one
 

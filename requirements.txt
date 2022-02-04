@@ -1,3 +1,4 @@
+astrapy==0.3.2
 pulsar-client==2.7.3
 python-dotenv==0.19.1
 ratelimiter==1.2.0.post0

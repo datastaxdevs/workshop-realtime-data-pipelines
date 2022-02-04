@@ -37,15 +37,15 @@ class ReviewState(object):
                 'hits': 0,
                 'num_outliers': 0,
                 'trollings': 0,
-                'targetMap': {},
+                'target_map': {},
             }
         self.userMap[uID]['hits'] += 1
         self.userMap[uID]['trollings'] += 1 if isTrollish else 0
         #
         if not isTrollish:
             # this is a valid review. Let's update this user's map
-            self.userMap[uID]['targetMap'][tgtID] = (
-                1 + self.userMap[uID]['targetMap'].get(tgtID, 0)
+            self.userMap[uID]['target_map'][tgtID] = (
+                1 + self.userMap[uID]['target_map'].get(tgtID, 0)
             )
             # we absorb this review in the rolling average
             if tgtID not in self.targetMap:

@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 import atexit
 
 from ReviewState import ReviewState
+from database.dataStorage import (initDB, updateReviewer, updateRestaurant,
+                                  updateIdSet)
 
 from settings import (
     ROLLING_AVERAGE_ALPHA,
@@ -55,6 +57,8 @@ if __name__ == '__main__':
     #
     client = pulsar.Client(PULSAR_CLIENT_URL)
     #
+    initDB()
+    #
     inputTopic = 'persistent://{tenant}/{namespace}/{topic}'.format(
         tenant=TENANT,
         namespace=NAMESPACE,
@@ -98,6 +102,7 @@ if __name__ == '__main__':
             isOutlier = reviewState.addReview(msgBody)
             #
             if isOutlier:
+                # print on screen
                 outlierMessage = {k: v for k, v in msgBody.items()}
                 outlierMessage['detected_by'] = 'review_analyzer.py'
                 outlierProducer.send(json.dumps(outlierMessage).encode('utf-8'))
@@ -110,6 +115,22 @@ if __name__ == '__main__':
                     msgBody['r_score'],
                 ))
             if numReceived % args.frequency == 0:
+                # persist latest values to DB
+                restaurantMap = reviewState.targetInfo()
+                reviewerMap = reviewState.userInfo()
+                updateIdSet('restaurant', restaurantMap.keys())
+                updateIdSet('reviewer', reviewerMap.keys())
+                for revID, revInfo in reviewerMap.items():
+                    updateReviewer(
+                        revID,
+                        **revInfo,
+                    )
+                for resID, resInfo in restaurantMap.items():
+                    updateRestaurant(
+                        resID,
+                        **resInfo,
+                    )
+                # console output if required
                 if args.reviews:
                     print('[%6i] Restaurant Score Summary:\n%s' % (
                         numReceived,
@@ -133,7 +154,7 @@ if __name__ == '__main__':
                                 v['trollings'] / v['hits'],
                                 v['num_outliers'],
                                 v['hits'],
-                                ', '.join('%s(%i)' % (tk, tv) for tk, tv in sorted(v['targetMap'].items())),
+                                ', '.join('%s(%i)' % (tk, tv) for tk, tv in sorted(v['target_map'].items())),
                             )
                             for k, v in sorted(reviewState.userInfo().items())
                         )

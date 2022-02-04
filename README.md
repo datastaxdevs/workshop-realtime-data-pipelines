@@ -88,6 +88,10 @@ As a mini test of the above function, you can run the following in two shells:
 You should see restaurant-only (normalized, cleaned) reviews being printed in the
 first shell (as they are consumed from the topic the function is routing messages to).
 
+### DB setup
+
+this part to write
+
 ### Review analyzer (engine only)
 
 So far it prints to stdout. It reads from the restaurants-only topic
@@ -105,4 +109,31 @@ and then, in another, you launch the review generator with e.g.
 
 The first shell will report outliers and periodically give an update
 on its status.
+
+### Query the Astra DB REST API
+
+```
+. .env
+
+ASTRA_URL_ROOT="https://${ASTRA_DB_ID}-${ASTRA_DB_REGION}.apps.astra.datastax.com/api/rest/v1/keyspaces/${ASTRA_DB_KEYSPACE}/tables"
+
+curl -X GET \
+    "${ASTRA_URL_ROOT}/known_ids_per_type/rows/restaurant" \
+    -H "accept: application/json" \
+    -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
+
+curl -X GET \
+    "${ASTRA_URL_ROOT}/known_ids_per_type/rows/reviewer" \
+    -H "accept: application/json" \
+    -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
+
+curl -X GET \
+    "${ASTRA_URL_ROOT}/restaurants_by_id/rows/vegg00" \
+    -H "accept: application/json" \
+    -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
+
+curl -X GET \
+    "${ASTRA_URL_ROOT}/reviewers_by_id/rows/geri" \
+    -H "accept: application/json" \
+    -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
 
