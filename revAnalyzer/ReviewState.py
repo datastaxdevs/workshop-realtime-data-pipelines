@@ -1,4 +1,4 @@
-from sentiment import textSentiment
+from revAnalyzer.sentiment import textSentiment
 
 class ReviewState(object):
 

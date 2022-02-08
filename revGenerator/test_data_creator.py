@@ -2,7 +2,7 @@
 
 import json
 
-from fake_reviews import createReview
+from revGenerator.fake_reviews import createReview
 
 TOT_SAMPLES = 100000
 

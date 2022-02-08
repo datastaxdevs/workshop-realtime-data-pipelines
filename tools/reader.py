@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
-import pulsar
 import argparse
 import sys
 import atexit
 import os
 from dotenv import load_dotenv
+
+from pulsarTools.tools import getPulsarClient
 
 
 load_dotenv()
@@ -36,9 +37,16 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--number', help='max number of messages', default=None, type=int)
     args = parser.parse_args()
     #
-    PULSAR_CLIENT_URL = os.environ['PULSAR_CLIENT_URL']
-    client = pulsar.Client(PULSAR_CLIENT_URL)
-    consumer = client.subscribe(args.topic,
+    client = getPulsarClient()
+    #
+    TENANT = os.environ['TENANT']
+    NAMESPACE = os.environ['NAMESPACE']
+    topicToRead = 'persistent://{tenant}/{namespace}/{topic}'.format(
+        tenant=TENANT,
+        namespace=NAMESPACE,
+        topic=args.topic,
+    )
+    consumer = client.subscribe(topicToRead,
                                 subscription_name=args.subscription)
 
     @atexit.register

@@ -3,7 +3,7 @@ import time
 import math
 import random
 
-from words import wordMap
+from revGenerator.words import wordMap
 
 
 NORMALOID_K = 1.4

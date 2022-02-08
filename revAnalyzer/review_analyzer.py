@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import pulsar
 import argparse
 import sys
 import json
@@ -8,11 +7,12 @@ import os
 from dotenv import load_dotenv
 import atexit
 
-from ReviewState import ReviewState
-from database.dataStorage import (initDB, updateReviewer, updateRestaurant,
-                                  updateIdSet)
+from pulsarTools.tools import getPulsarClient
+from revAnalyzer.ReviewState import ReviewState
+from revAnalyzer.database.dataStorage import (initDB, updateReviewer,
+                                              updateRestaurant, updateIdSet)
 
-from settings import (
+from revAnalyzer.settings import (
     ROLLING_AVERAGE_ALPHA,
     TROLLISH_S_THRESHOLD,
     TROLLISH_MIDREGION_WIDTH,
@@ -49,13 +49,12 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--frequency', help='frequency of reporting (message count)', type=int, default=200)
     args = parser.parse_args()
     #
-    PULSAR_CLIENT_URL = os.environ['PULSAR_CLIENT_URL']
+    client = getPulsarClient()
+    #
     TENANT = os.environ['TENANT']
     NAMESPACE = os.environ['NAMESPACE']
     INPUT_TOPIC = os.environ['RESTAURANT_TOPIC']
     ANOMALIES_TOPIC = os.environ['ANOMALIES_TOPIC']
-    #
-    client = pulsar.Client(PULSAR_CLIENT_URL)
     #
     initDB()
     #

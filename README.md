@@ -66,7 +66,22 @@ Go to the in-container bash again:
 
 (by the way, you would delete it with `./bin/pulsar-admin functions delete --tenant public --namespace default --name rrouter-function`).
 
+### Running py code
+
+Make a Python 3.6+ virtual env, install the dependencies in `requirements.txt`
+and add this repo's root dir to the `PYTHONPATH`.
+
+Commands for three shells at best:
+```
+./revGenerator/review_generator.py -r 1000
+./revAnalyzer/review_analyzer.py -r -o -f 50
+./tools/reader.py -t rr-restaurant-anomalies
+```
+
 ### Setup and testing so far
+
+_Note_: obsolete: to update. Renamed directories, don't mention docker stuff here,
+need more instructions on `.env`.
 
 _All this outside of Docker. Mind that this is a very basic and approximate "test"._
 
@@ -75,7 +90,7 @@ Check the `.env.sample`, copy it to `.env` and make sure of its config. In parti
 
 Also create a Python3 virtualenv or anyway install the dependencies in `requirements.txt`.
 
-As a mini test of the above function, you can run the following in two shells:
+As a mini test of the above function, you can run the following in two shells (Note: obsolete setup instructions):
 
 ```
 # one shell:
@@ -137,3 +152,39 @@ curl -X GET \
     -H "accept: application/json" \
     -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
 
+```
+
+### Switch to Astra Streaming
+
+Create an Astra Streaming tenant in your Astra Account (link to wiki).
+Call it e.g. `trollsquad` (beware: tenant names are unique, pick yours!)
+
+Use the `default` namespace in that tenant.
+
+Create (with the Astra UI) the four topics (persistent=yes, partitioned=no):
+`rr-raw-in`, `rr-hotel-reviews`, `rr-restaurant-reviews`
+and `rr-restaurant-anomalies`.
+
+Retrieve the Broker Service URL and the Streaming Token (link to wiki).
+
+Edit the `.env` to the right `PULSAR_MODE` and subsequent variables, including
+the tenant name later.
+
+#### Function:
+
+in the Astra UI, pick your tenant and the "Functions" tab.
+
+"Create Function".
+
+**IMPORTANT**: manually edit tenant name in the `DST_TOPIC_MAP` in the Python
+file before uploading. It must reflect your unique tenant name!
+
+- Name = `rrouter-function`, namespace = `default`;
+- upload the `pulsar_routing_function/review_router.py` and pick the `ReviewRouter` function name;
+- input topic: `default` and `rr-raw-in`;
+- leave output/log topics empty;
+- do not touch Advanced Configuration;
+- no need for any further option configuration. Hit "Create".
+
+The function will display as "Initializing" in the listing for some time
+(20 s perhaps), then "Running".

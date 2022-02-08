@@ -3,12 +3,12 @@
 import json
 import itertools
 import os
-import pulsar
 import argparse
 from ratelimiter import RateLimiter
 from dotenv import load_dotenv
 
-from fake_reviews import createReview, initRandom
+from pulsarTools.tools import getPulsarClient
+from revGenerator.fake_reviews import createReview, initRandom
 
 load_dotenv()
 
@@ -25,11 +25,11 @@ if __name__ == '__main__':
     initRandom(args.seed)
 
     # init connection
-    PULSAR_CLIENT_URL = os.environ['PULSAR_CLIENT_URL']
+    client = getPulsarClient()
+    #
     TENANT = os.environ['TENANT']
     NAMESPACE = os.environ['NAMESPACE']
     RAW_TOPIC = os.environ['RAW_TOPIC']
-    client = pulsar.Client(PULSAR_CLIENT_URL)
     streamingTopic = 'persistent://{tenant}/{namespace}/{topic}'.format(
         tenant=TENANT,
         namespace=NAMESPACE,
