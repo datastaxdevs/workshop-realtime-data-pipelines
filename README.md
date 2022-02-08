@@ -23,19 +23,19 @@ after normalizing their structure, to two specific topics. We happen to be inter
 so we have a process performing the actual analysis. Heavy artillery, such as ML-trained classifiers
 and the like, would be placed here.
 
-The analyser keeps listening to the restaurant topic and ingests all incoming reviews: it keeps
+The analyzer keeps listening to the restaurant topic and ingests all incoming reviews: it keeps
 and update a state with key information, such as a rolling average score per each restaurant.
 
 As new items arrive, they are checked if they are "troll reviews" (review text in heavy disagreement
 with the numeric score) and, if so, discarded. Otherwise they enter the rolling average for the
 target restaurant.
 
-The analyser periodically publishes an assessment for users and restaurants to a database, ready to
+The analyzer periodically publishes an assessment for users and restaurants to a database, ready to
 be queried by any service that may need this data. (The output can also go to console if so desired).
 The destination DB also offers a ready-to-use REST API that allows to retrieve its data
 with simple HTTP requests, making it easy to build panels and UIs on top of this pipeline.
 
-The analyser also reroutes "outlier reviews" (scores much different than the current rolling average)
+The analyzer also reroutes "outlier reviews" (scores much different than the current rolling average)
 to another Pulsar topic, for a hypothetical manual inspection of such outliers.
 
 ### Review generation
@@ -63,7 +63,7 @@ scores emitted by two different reviewers are plotted with a large and a small a
 Also, each reviewer has a "trolliness", a Boolean: if true, then a review text is built in strong
 disagreement with the numeric score in the review.
 
-On the **analyser side**, the reconstructed rolling average roughly follows the "true" quality for
+On the **analyzer side**, the reconstructed rolling average roughly follows the "true" quality for
 a venue, and is used to detect "outliers": each review that differs too much from the current rolling
 average is deemed an outlier. Here the rolling average corresponding to the above restaurant is plotted:
 
@@ -222,7 +222,7 @@ you will soon start.
 Everything is now ready to run the demo.
 
 Open three shells next to each other: one will run the review generator,
-one will run the analyser, and the third will consume and display entries
+one will run the analyzer, and the third will consume and display entries
 from the "review anomalies" topic.
 
 > The third shell will run a simple utility able to subscribe to a generic
@@ -259,7 +259,7 @@ just inspect the `trollsquad` keyspace and try to `SELECT` rows from the tables 
 > historical data for e.g. a plotting client application (there is some built-in eviction
 > of old results to avoid unbound growth of the table).
 
-_Note:_ you just have to create the keyspace, since every time the analyser starts
+_Note:_ you just have to create the keyspace, since every time the analyzer starts
 it checks for the tables and, if they do not exist, it creates them for you.
 
 ### Astra DB REST API
