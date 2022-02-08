@@ -152,6 +152,10 @@ curl -X GET \
     -H "accept: application/json" \
     -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
 
+curl -X GET \
+    "${ASTRA_URL_ROOT}/restaurants_by_id_time/rows/gold_f" \
+    -H "accept: application/json" \
+    -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
 ```
 
 ### Switch to Astra Streaming

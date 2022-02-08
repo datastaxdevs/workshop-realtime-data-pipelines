@@ -10,7 +10,8 @@ import atexit
 from pulsarTools.tools import getPulsarClient
 from revAnalyzer.ReviewState import ReviewState
 from revAnalyzer.database.dataStorage import (initDB, updateReviewer,
-                                              updateRestaurant, updateIdSet)
+                                              updateRestaurant, updateIdSet,
+                                              insertRestaurantTime)
 
 from revAnalyzer.settings import (
     ROLLING_AVERAGE_ALPHA,
@@ -128,6 +129,11 @@ if __name__ == '__main__':
                     updateRestaurant(
                         resID,
                         **resInfo,
+                    )
+                    insertRestaurantTime(
+                        resID,
+                        name=resInfo['name'],
+                        average=resInfo['average'],
                     )
                 # console output if required
                 if args.reviews:

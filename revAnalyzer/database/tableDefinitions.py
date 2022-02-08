@@ -1,5 +1,6 @@
 knownIdsPerTypeTableName = 'known_ids_per_type'
 restaurantsByIDTableName = 'restaurants_by_id'
+restaurantsByIDTimeTableName = 'restaurants_by_id_time'
 reviewersByIDTableName = 'reviewers_by_id'
 
 knownIdsPerTypeTable = {
@@ -61,6 +62,50 @@ restaurantsByIDTable = {
     },
 }
 
+restaurantsByIDTimeTable = {
+    'name': restaurantsByIDTimeTableName,
+    'ifNotExists': True,
+    'columnDefinitions': [
+        {
+            'name': 'id',
+            'typeDefinition': 'text',
+            'static': False,
+        },
+        {
+            'name': 'time',
+            'typeDefinition': 'timestamp',
+            'static': False,
+        },
+        {
+            'name': 'name',
+            'typeDefinition': 'text',
+            'static': False,
+        },
+        {
+            'name': 'average',
+            'typeDefinition': 'float',
+            'static': False,
+        },
+    ],
+    'primaryKey': {
+        'partitionKey': [
+            'id',
+        ],
+        'clusteringKey': [
+            'time',
+        ],
+    },
+    'tableOptions': {
+        'defaultTimeToLive': 600,
+        'clusteringExpression': [
+            {
+                'column': 'time',
+                'order': 'ASC',
+            },
+        ],
+    },
+}
+
 reviewersByIDTable = {
     'name': reviewersByIDTableName,
     'ifNotExists': True,
@@ -101,5 +146,6 @@ reviewersByIDTable = {
 tableDefs = [
     knownIdsPerTypeTable,
     restaurantsByIDTable,
+    restaurantsByIDTimeTable,
     reviewersByIDTable,
 ]

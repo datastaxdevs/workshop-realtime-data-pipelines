@@ -1,6 +1,7 @@
 """ dataStorage.py """
 
 import os
+import datetime
 from dotenv import load_dotenv
 from astrapy.client import create_astra_client
 
@@ -12,6 +13,7 @@ from .tableDefinitions import (
     tableDefs,
     knownIdsPerTypeTableName,
     restaurantsByIDTableName,
+    restaurantsByIDTimeTableName,
     reviewersByIDTableName,
 )
 
@@ -59,6 +61,21 @@ def updateRestaurant(id, name, average, hits, num_outliers):
             'average': average,
             'hits': hits,
             'num_outliers': num_outliers,
+        },
+    )
+
+
+def insertRestaurantTime(id, name, average, time=None):
+    _rowTime = datetime.datetime.now() if time is None else time
+    a=1
+    client.rest.add_row(
+        keyspace=ASTRA_DB_KEYSPACE,
+        table=restaurantsByIDTimeTableName,
+        row={
+            'id': id,
+            'time': _rowTime.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+            'name': name,
+            'average': average,
         },
     )
 
