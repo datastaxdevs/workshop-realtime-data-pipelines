@@ -105,6 +105,7 @@ def createReview(idx):
                 'item_id': targetID,
                 'item_name': targetName,
                 'text': reviewText,
+                'idx': idx,
             }.items()
             if v is not None
         })

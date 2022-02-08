@@ -108,11 +108,12 @@ if __name__ == '__main__':
                 outlierProducer.send(json.dumps(outlierMessage).encode('utf-8'))
             #
             if args.outliers and isOutlier:
-                print('[%6i] Outlier detected: "%s" on "%s" (%0.2f)' % (
+                print('[%6i] Outlier detected: "%s" on "%s" (%0.2f, idx=%i)' % (
                     numReceived,
                     msgBody['user_id'],
                     msgBody['tgt_name'],
                     msgBody['r_score'],
+                    msgBody['idx'],
                 ))
             if numReceived % args.frequency == 0:
                 # persist latest values to DB
@@ -136,12 +137,15 @@ if __name__ == '__main__':
                         average=resInfo['average'],
                     )
                 # console output if required
+                # Note we print the last message idx
+                # and not the reception count here (to compare with input)
                 if args.reviews:
                     print('[%6i] Restaurant Score Summary:\n%s' % (
-                        numReceived,
+                        msgBody['idx'],
                         '\n'.join(
-                            '                 [%s]   %-18s : %0.2f   (outliers: %6i/%6i)' % (
+                            '                 [%s %6i]   %-18s : %0.2f   (outliers: %6i/%6i)' % (
                                 k,
+                                msgBody['idx'],
                                 '"%s"' % v['name'],
                                 v['average'],
                                 v['num_outliers'],
@@ -152,10 +156,11 @@ if __name__ == '__main__':
                     ))
                 if args.trolls:
                     print('[%6i] Reviewer Summary:\n%s' % (
-                        numReceived,
+                        msgBody['idx'],
                         '\n'.join(
-                            '                 %8s : troll-score = %0.2f (outliers: %6i / %6i). Visits: %s' % (
+                            '                 %8s %6i : troll-score = %0.2f (outliers: %6i / %6i). Visits: %s' % (
                                 '"%s"' % k,
+                                msgBody['idx'],
                                 v['trollings'] / v['hits'],
                                 v['num_outliers'],
                                 v['hits'],

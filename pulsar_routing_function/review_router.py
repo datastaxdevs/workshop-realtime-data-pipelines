@@ -35,6 +35,7 @@ class ReviewRouter(Function):
             itemName = inputDict['item_name']
             itemID = inputDict['item_id']
             reviewText = inputDict['text']
+            reviewIdx = inputDict['idx']
             #
             if reviewType in DST_TOPIC_MAP:
                 outputDict = {
@@ -43,6 +44,7 @@ class ReviewRouter(Function):
                     'tgt_name': itemName,
                     'tgt_id': itemID,
                     'r_text': reviewText,
+                    'idx': reviewIdx,
                 }
                 logger.info('Routing "%s" review to its topic' % reviewType)
                 # TODO: for now we stay schemaless on the dest topics!

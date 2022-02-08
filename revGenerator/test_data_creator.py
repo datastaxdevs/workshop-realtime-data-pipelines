@@ -1,47 +1,80 @@
 #!/usr/bin/env python
 
 import json
+import math
+import os
 
-from revGenerator.fake_reviews import createReview
+from revGenerator.fake_reviews import createReview, targets
 
-TOT_SAMPLES = 100000
+
+outDir = 'sample_data'
+
+numIterations = 120000
+theoLineFrequency = 1000
 
 if __name__ == '__main__':
 
-    series = {}
+    # item_id, u_id/user_id
+    tracked = {
+        ('gold_f', 'anne'),
+        ('gold_f', 'rita'),
+    }
+    # theoretical scores: a map target_id -> (W, Phi)
+    targetParams = {
+        tgt[0]: (tgt[3], tgt[4])
+        for tgt in targets
+    }
+    theoreticals = {'gold_f', 'pizzas'}
+    def _theo(w, phi): return 5 + 4.5 * math.cos(idx*w + phi)
 
-    for idx in range(TOT_SAMPLES):
+    # open files
+    dataFiles = {
+        k: open(
+            os.path.join(
+                outDir,
+                'data_%s_%s.dat' % k,
+            ),
+            'w',
+        )
+        for k in tracked
+    }
+    theoFiles = {
+        k: open(
+            os.path.join(
+                outDir,
+                'theo_%s.dat' % k,
+            ),
+            'w',
+        )
+        for k in theoreticals
+    }
+
+    for idx in range(numIterations):
         msg = createReview(idx)
         #
         try:
             rev = json.loads(msg)
             uid = rev.get('u_id', rev.get('user_id'))
-            tgt = rev['item_name']
+            tgt = rev['item_id']
             pair = (tgt, uid)
-            series[pair] = series.get(pair, []) + [(idx, rev['score'])]
+            if pair in dataFiles:
+                dataFiles[pair].write('%i\t%.2f\n' % (
+                    idx,
+                    rev['score'],
+                ))
         except Exception:
             pass
+        #
+        if idx % theoLineFrequency == 0:
+            for k, f in theoFiles.items():
+                theoVal = _theo(*targetParams[k])
+                f.write('%i\t%.2f\n' % (
+                    idx,
+                    theoVal,
+                ))
 
-    # we print the files
-    for (tgt, uid), ser in series.items():
-        with open('test_data/%s_%s.dat' % (tgt.replace(' ', '-'), uid), 'w') as f:
-            f.write('%s\n' % (
-                '\n'.join(
-                    '%i\t%f' % (x, y)
-                    for x, y in ser
-                )
-            ))
-
-    # gnuplot commands (heh)
-    tgts = {t for t, _ in series.keys()}
-    for tgt in tgts:
-        uids = {u for t, u in series.keys() if t == tgt}
-        print('\nplot %s' % (
-            ', '.join(
-                '\'%s\' u 1:2 w po t \'%s\'' % (
-                    '%s_%s.dat' % (tgt.replace(' ', '-'), uid),
-                    '%s (%s)' % (tgt, uid)
-                )
-                for uid in sorted(uids)
-            )
-        ))
+    #
+    for f in dataFiles.values():
+        f.close()
+    for f in theoFiles.values():
+        f.close()
