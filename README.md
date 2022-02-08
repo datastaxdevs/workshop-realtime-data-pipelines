@@ -1,7 +1,7 @@
 # README
 
 Review Troll Squad. A sample architecture making use of Pulsar and Pulsar
-Functions for real-time, message-based data ingestion, cleaning and processing.
+Functions for real-time, event-streaming-based data ingestion, cleaning and processing.
 
 _Reviews of various venues (hotels/restaurants), written by various users, keep pouring in.
 We need a way to clean, normalize and filter them, removing trolls
@@ -12,21 +12,21 @@ and blatant outliers, and make the results available to the end user._
 
 ![Current architecture](images/current_arch.png)
 
-A stream of messages, some of which are reviews, is poured into a Pulsar topic for "raw reviews".
-A Pulsar function filters out malformed messages and messages containing reviews not specifying
-their target type (restaurant/hotel). This function takes care of normalizing the incoming messages,
-since - as is often the case in real life - certain field names in the incoming messages can have
-multiple forms. All messages are encoded as JSON strings.
+A stream of "events" (messages), some of which are reviews, is poured into a Pulsar topic for "raw reviews".
+A Pulsar function filters out malformed items and those that do not specify
+their target type (restaurant/hotel). This function takes care of normalizing the incoming reviews,
+since - as is often the case in real life - certain field names in the incoming reviews can have
+multiple forms. All reviews are encoded as JSON strings.
 
 The Pulsar function singles out hotel and restaurant reviews and routes them,
 after normalizing their structure, to two specific topics. We happen to be interested in restaurants,
 so we have a process performing the actual analysis. Heavy artillery, such as ML-trained classifiers
 and the like, would be placed here.
 
-The analyser keeps listening to the restaurant topic and ingests all incoming messages: it keeps
+The analyser keeps listening to the restaurant topic and ingests all incoming reviews: it keeps
 and update a state with key information, such as a rolling average score per each restaurant.
 
-As new messages arrive, they are checked if they are "troll reviews" (review text in heavy disagreement
+As new items arrive, they are checked if they are "troll reviews" (review text in heavy disagreement
 with the numeric score) and, if so, discarded. Otherwise they enter the rolling average for the
 target restaurant.
 
@@ -222,14 +222,14 @@ you will soon start.
 Everything is now ready to run the demo.
 
 Open three shells next to each other: one will run the review generator,
-one will run the analyser, and the third will consume and display messages
+one will run the analyser, and the third will consume and display entries
 from the "review anomalies" topic.
 
 > The third shell will run a simple utility able to subscribe to a generic
-> Pulsar topic and display the messages found therein. You can use it to peek
+> Pulsar topic and display the items found therein. You can use it to peek
 > into the other topics as well. But if you are using Astra Streaming you may
 > as well want to explore the "Try Me!" feature available directly in the Web UI,
-> which allows to read and write messages by hand from/to Astra Streaming topics.
+> which allows to read and write items by hand from/to Astra Streaming topics.
 
 Now start in rapid succession these three commands in the three shells and
 enjoy the show:
