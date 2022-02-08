@@ -43,7 +43,7 @@ if __name__ == '__main__':
         'rita': decimate(loadData('../revGenerator/sample_data/data_gold_f_rita.dat'), 5),
     }
     average = {
-        'gold_f': loadData('../revAnalyzer/sample_averages/avg_gold_f.dat')
+        'gold_f': decimate(loadData('../revAnalyzer/sample_averages/avg_gold_f.dat'), 5),
     }
 
     #
@@ -61,10 +61,11 @@ if __name__ == '__main__':
     plt.close(fig)
 
     fig = plt.figure(figsize=(16, 11))
-    plt.plot(*theory['gold_f'], '-', lw=1, color='purple', label='Golden Fork (real score)')
+    plt.plot(*theory['gold_f'], '-', lw=2, color='purple', label='Golden Fork (real score)')
     plt.plot(*theory['pizzas'], '-', lw=1, color='#008000', label='PizzaSmile (real score)')
     plt.plot(*data['anne'], '*', color='orange', label='Anne for Golden Fork')
     plt.plot(*data['rita'], 'h', color='red', label='Rita for Golden Fork')
+    plt.plot(*theory['gold_f'], '-', lw=2, color='purple', label=None)
     plt.xlim((0, 120000))
     plt.ylim((0, 10))
     plt.title('Actual reviews being generated')
@@ -80,7 +81,8 @@ if __name__ == '__main__':
     plt.plot(*theory['pizzas'], '-', lw=1, color='#008000', label='PizzaSmile (real score)')
     plt.plot(*data['anne'], '*', color='orange', label='Anne for Golden Fork', alpha=0.5)
     plt.plot(*data['rita'], 'h', color='red', label='Rita for Golden Fork', alpha=0.5)
-    plt.plot(*average['gold_f'], '-', lw=3, color='magenta', label='Golden Fork (moving average)')
+    plt.plot(*average['gold_f'], '-', lw=3, color='#0000C0', label='Golden Fork (moving average)')
+    plt.plot(*theory['gold_f'], '-', lw=2, color='purple', label=None)
     plt.xlim((0, 120000))
     plt.ylim((0, 10))
     plt.title('Moving average from received reviews')

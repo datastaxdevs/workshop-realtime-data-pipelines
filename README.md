@@ -1,11 +1,11 @@
 # README
 
-Review Troll Squad. A sample architecture making use of Pulsar and Pulsar
+**Review Troll Squad**: a sample architecture making use of Pulsar and Pulsar
 Functions for real-time, event-streaming-based data ingestion, cleaning and processing.
 
 _Reviews of various venues (hotels/restaurants), written by various users, keep pouring in.
 We need a way to clean, normalize and filter them, removing trolls
-and blatant outliers, and make the results available to the end user._
+and flagging blatant outlier reviews, and make the running results available to the end user._
 
 
 ## The use-case
@@ -20,8 +20,8 @@ multiple forms. All reviews are encoded as JSON strings.
 
 The Pulsar function singles out hotel and restaurant reviews and routes them,
 after normalizing their structure, to two specific topics. We happen to be interested in restaurants,
-so we have a process performing the actual analysis. Heavy artillery, such as ML-trained classifiers
-and the like, would be placed here.
+so we have a long-running process ("analyzer") performing the actual analysis on these. Heavy artillery, such as AI/ML-based classifiers, code with fat dependencies
+and the like, would be placed here (i.e. outside Pulsar).
 
 The analyzer keeps listening to the restaurant topic and ingests all incoming reviews: it keeps
 and update a state with key information, such as a rolling average score per each restaurant.
@@ -56,11 +56,17 @@ Each venue has a "true" quality that is slowly oscillating in time, see for exam
 
 Each reviewer has an associate amplitude that dictates how widely the scores they produce
 may fluctuate away from the "true" value for that venue at that "time": in this example, the individual
-scores emitted by two different reviewers are plotted with a large and a small amplitude:
+scores emitted by two different reviewers, having a large and small associated amplitude, are plotted:
 
 ![Real Values](images/plots/02_reviews.png)
 
-Also, each reviewer has a "trolliness", a Boolean: if true, then a review text is built in strong
+While reviews by Rita will presumably all fall in the "expected" region around the current average,
+a large fraction of the reviews by Anne will be too far away from
+it and thus be flagged as "outlier reviews".
+
+Each review comes with an associated text, which in this toy
+example is simply a bunch of words strung together, some positive ("delicious") and some negative ("disgusting").
+Each reviewer, however, has a Boolean "trolliness" flag: if true, then this text is built in strong
 disagreement with the numeric score in the review.
 
 On the **analyzer side**, the reconstructed rolling average roughly follows the "true" quality for
@@ -69,12 +75,17 @@ average is deemed an outlier. Here the rolling average corresponding to the abov
 
 ![Real Values](images/plots/03_moving-average.png)
 
+The analyzer also discards troll reviews and keeps a running 
+counter of them, both per-user and per-restaurant, ready to be exposed with the other data. To do so, a toy version of a sentiment
+analysis is implemented (simply based on some words with positive
+and negative connotation) and used to compare with the numeric
+score given in the review.
+
+
 
 ## Setup
 
-A Pulsar instance is needed to provide the streaming infrastructure. This demo
-can run both on a standard Pulsar installation or an Astra Streaming instance:
-the following instructions will cover both cases.
+The setup involves an event streaming platform and a database.
 
 ### Database
 
@@ -87,6 +98,11 @@ as described [here](https://github.com/datastaxdevs/awesome-astra/wiki/Create-an
 and keep the "Token" value handy.
 
 ### Pulsar/Astra Streaming
+
+
+A Pulsar instance is needed to provide the streaming infrastructure. This demo
+can run both on a standard Pulsar installation or an Astra Streaming instance:
+the following instructions will cover both cases.
 
 Choose your path:
 
@@ -107,12 +123,12 @@ and `rr-restaurant-anomalies`.
 
 Retrieve the Broker Service URL and the Streaming Token (again, see [here](https://github.com/datastaxdevs/awesome-astra/wiki/Create-an-AstraStreaming-Topic#-step-4-retrieve-the-broker-url)).
 
-#### Function:
+**Function:**
 
 In the Astra UI, click on your tenant and go to the "Functions" tab.
 Hit "Create Function".
 
-**IMPORTANT**: You must now manually edit the tenant name in all entries of the
+_IMPORTANT_: You must now manually edit the tenant name in all entries of the
 `DST_TOPIC_MAP` in the Python file before uploading:
 **it must reflect your unique tenant name**.
 
@@ -130,21 +146,31 @@ The function will display as "Initializing" in the listing for some time
 
 #### If you use standard Pulsar
 
-We assume in the following a fresh dockerized Pulsar installation, i.e.
+We assume in the following a [fresh dockerized Pulsar installation](https://pulsar.apache.org/docs/en/standalone-docker/), i.e.
 obtained with
 
-    docker run -it -p 6650:6650  -p 8080:8080 --mount source=pulsardata,target=/pulsar/data --mount source=pulsarconf,target=/pulsar/conf apachepulsar/pulsar:2.9.1 bin/pulsar standalone
+```
+docker run                                          \
+    -it                                             \
+    -p 6650:6650                                    \
+    -p 8080:8080                                    \
+    --mount source=pulsardata,target=/pulsar/data   \
+    --mount source=pulsarconf,target=/pulsar/conf   \
+    apachepulsar/pulsar:2.9.1                       \
+    bin/pulsar                                      \
+    standalone
+```
 
-(note that ports 6650 (and 8080) are accessible from outside docker: we are going to take advantage of this fact.)
+(note that ports 6650 and 8080 are made accessible from outside docker: we are going to take advantage of this fact.)
 
-Spawn a shell on the Pulsar machine:
+Spawn a shell on the Pulsar machine (here and in the following
+we assume variable `CONTAINER_ID` contains the name of the Pulsar container):
 
-    docker exec -it $CONTAINER_ID bash
+    docker exec -it ${CONTAINER_ID} bash
 
 and create the four required topics with
 ```
-mkdir /root/functions   # while we're at it, for later
-
+# this should output nothing
 ./bin/pulsar-admin topics list public/default
 
 ./bin/pulsar-admin topics create persistent://public/default/rr-raw-in
@@ -152,14 +178,22 @@ mkdir /root/functions   # while we're at it, for later
 ./bin/pulsar-admin topics create persistent://public/default/rr-restaurant-reviews
 ./bin/pulsar-admin topics create persistent://public/default/rr-restaurant-anomalies
 
+# this should list the four created topics
 ./bin/pulsar-admin topics list public/default
+```
+
+**Function:**
+
+Create a directory in the Pulsar container to host the function file:
+```
+mkdir /root/functions
 ```
 
 Next, carry the Python file (containing the Pulsar function) to the Docker instance
 and install it as a Pulsar function:
 
     # IN YOUR LOCAL SHELL:
-    docker cp pulsar_routing_function/review_router.py $CONTAINER_ID:/root/functions
+    docker cp pulsar_routing_function/review_router.py ${CONTAINER_ID}:/root/functions
 
 ```
 # Back to the Pulsar machine shell
@@ -178,7 +212,7 @@ ls /root/functions    # check py file is there
   --namespace default
 ```
 
-(You would delete it with `./bin/pulsar-admin functions delete --tenant public --namespace default --name rrouter-function`).
+(You would delete it, should the need arise, with `./bin/pulsar-admin functions delete --tenant public --namespace default --name rrouter-function`).
 
 The Pulsar setup is done.
 
@@ -194,7 +228,7 @@ connection/credentials in the `ASTRA_STREAMING_BROKER_URL` and
 `ASTRA_STREAMING_TOKEN` variables.
 In the latter case (standalone Pulsar, again assuming a simple local dockerized
 installation) you are good with inserting the URL to your local Pulsar in
-`PULSAR_CLIENT_URL` (probably `docker inspect $CONTAINER_NAME` may help).
+`PULSAR_CLIENT_URL` (probably `docker inspect ${CONTAINER_ID}` may help).
 
 Make sure `TENANT` and `NAMESPACE` match your setup (the former is likely
 `public` on a local Pulsar and is whatever tenant name you chose if you are
@@ -203,9 +237,9 @@ on Astra Streaming; the latter is most likely just `default`).
 Unless you got creative with the topic names, those should be all
 right as they are.
 
-Next is the Astra DB part: remember the token you created earlier for the DB
+Next is the Astra DB part: take the token you created earlier for the DB
 and paste it to `ASTRA_DB_APP_TOKEN`, while the values for
-`ASTRA_DB_ID`, `ASTRA_DB_REGION` and `ASTRA_DB_KEYSPACE` are all found in the
+`ASTRA_DB_ID`, `ASTRA_DB_REGION` and `ASTRA_DB_KEYSPACE` are all to be found in the
 main dashboard of your Astra UI.
 
 ### Python environment
@@ -249,7 +283,7 @@ to the scripts to see what is available.
 
 ### Querying the database
 
-The only part still to show is reading from the database. You can access
+The only missing piece at this point are direct database queries. You can access
 the tables in any way you want, for instance using the
 provided [CQL shell on the Astra DB UI](https://github.com/datastaxdevs/awesome-astra/wiki/Cql-Shell):
 just inspect the `trollsquad` keyspace and try to `SELECT` rows from the tables you find there.
@@ -264,14 +298,14 @@ it checks for the tables and, if they do not exist, it creates them for you.
 
 ### Astra DB REST API
 
-One of the nice things of Astra DB is that you get various ways to interact
-with your database through ordinary HTTP requests, all for free, through
+One of the nice things of Astra DB is that you effortlessly get various ways to interact
+with your database through ordinary HTTP requests through
 the [Stargate Data API](https://stargate.io/) on top of the underlying database.
 
 The following examples are run with `cURL`, but of course they can be adapted
 to any client able to issue simple HTTPS requests.
 
-First source the `.env` file in a shell and create the full base URL for the requests:
+First source the `.env` file in a shell and construct the full base URL used in the subsequent requests:
 ```
 . .env
 ASTRA_URL_ROOT="https://${ASTRA_DB_ID}-${ASTRA_DB_REGION}.apps.astra.datastax.com/api/rest/v1/keyspaces/${ASTRA_DB_KEYSPACE}/tables"
@@ -280,30 +314,35 @@ ASTRA_URL_ROOT="https://${ASTRA_DB_ID}-${ASTRA_DB_REGION}.apps.astra.datastax.co
 then try to run the following commands one by one and wee what the result looks like:
 
 ```
+# What restaurants can be queried?
 curl -X GET \
     "${ASTRA_URL_ROOT}/known_ids_per_type/rows/restaurant" \
     -H "accept: application/json" \
     -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
 
 
+# What reviewers can be queried?
 curl -X GET \
     "${ASTRA_URL_ROOT}/known_ids_per_type/rows/reviewer" \
     -H "accept: application/json" \
     -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
 
 
+# What's the current status of a restaurant?
 curl -X GET \
     "${ASTRA_URL_ROOT}/restaurants_by_id/rows/vegg00" \
     -H "accept: application/json" \
     -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
 
 
+# What's the current status of a reviewer?
 curl -X GET \
     "${ASTRA_URL_ROOT}/reviewers_by_id/rows/geri" \
     -H "accept: application/json" \
     -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
 
 
+# What is the timeline of reviews for a restaurant?
 curl -X GET \
     "${ASTRA_URL_ROOT}/restaurants_by_id_time/rows/gold_f" \
     -H "accept: application/json" \

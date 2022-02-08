@@ -2,10 +2,9 @@
 
 ![Goal architecture](images/goal_arch.png)
 
-Avro schema in all topics except the 'raw' one (?)
+Output (to console and DB) triggered also by elapsed time, not only number of received items.
 
-Persistence triggered by either number OR elapsed time
+Enforce schema in all topics except the "raw" one.
 
-better output
+Nicer output for the "reader".
 
-move this repo over to datastaxdevs
