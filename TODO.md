@@ -6,5 +6,3 @@ Output (to console and DB) triggered also by elapsed time, not only number of re
 
 Enforce schema in all topics except the "raw" one.
 
-Nicer output for the "reader.py".
-

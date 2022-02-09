@@ -4,12 +4,20 @@ import argparse
 import sys
 import atexit
 import os
+import json
+import datetime
 from dotenv import load_dotenv
 
 from pulsarTools.tools import getPulsarClient
 
 
 load_dotenv()
+
+
+def _nowstr(): return datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+
+
+def _reindent(t, n): return '\n'.join('%s%s' % (' '*n, l) for l in t.split('\n'))
 
 
 def receiveOrNone(consumer, timeout):
@@ -35,9 +43,11 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--topic', help='topic name')
     parser.add_argument('-s', '--subscription', help='subscription name', default='my-sub')
     parser.add_argument('-n', '--number', help='max number of messages', default=None, type=int)
+    parser.add_argument('-w', '--waitseconds', help='timeout for a single read', default=5.0, type=float)
     args = parser.parse_args()
     #
     client = getPulsarClient()
+    #
     #
     TENANT = os.environ['TENANT']
     NAMESPACE = os.environ['NAMESPACE']
@@ -57,13 +67,25 @@ if __name__ == '__main__':
 
     numReceived = 0
     while True:
-        msg = receiveOrNone(consumer, 5000)
+        msg = receiveOrNone(consumer, int(args.waitseconds * 1000))
         if msg:
             numReceived += 1
-            print("\n\n\t\tReceived message (%i): %s\n\n" % (numReceived, msg.data().decode()))
+            print('[%s] Received message %i:' % (_nowstr(), numReceived))
+            msgContent = msg.data().decode()
+            try:
+                msgJson = json.loads(msgContent)
+                print('    Type = JSON')
+                print('%s\n' % _reindent(
+                    json.dumps(msgJson, indent=4, sort_keys=True, ensure_ascii=False),
+                    8,
+                ))
+            except Exception:
+                print('    Type = RAW')
+                print('        %s\n' % msgContent)
+            #
             consumer.acknowledge(msg)
         else:
-            print('\n\n\tNOTHING RECEIVED\n\n')
+            print('[%s] ...' % _nowstr())
         #
         if args.number is not None and args.number <= numReceived:
             break
