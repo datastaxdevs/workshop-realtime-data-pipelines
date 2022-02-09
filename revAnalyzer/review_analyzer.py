@@ -91,10 +91,12 @@ if __name__ == '__main__':
     # we basically keep consuming and update our internal state here,
     # handing out updates now and then.
     numReceived = 0
+    receivedSinceDBFlush = 0
     while True:
         msg = receiveOrNone(consumer, 50)
         if msg:
             numReceived += 1
+            receivedSinceDBFlush += 1
             msgBody = json.loads(msg.data().decode())
 
             # let's submit this review to the rolling state
@@ -108,14 +110,16 @@ if __name__ == '__main__':
                 outlierProducer.send(json.dumps(outlierMessage).encode('utf-8'))
             #
             if args.outliers and isOutlier:
-                print('[%6i] Outlier detected: "%s" on "%s" (%0.2f, idx=%i)' % (
+                print('[%6i] Outlier detected: "%s" on "%s" (rev %0.2f != avg %0.2f, idx=%i)' % (
                     numReceived,
                     msgBody['user_id'],
                     msgBody['tgt_name'],
                     msgBody['r_score'],
+                    reviewState.targetInfo()[msgBody['tgt_id']]['average'],
                     msgBody['idx'],
                 ))
             if numReceived % args.frequency == 0:
+                print('[%6i] Writing to DB ... ' % numReceived, end='')
                 # persist latest values to DB
                 restaurantMap = reviewState.targetInfo()
                 reviewerMap = reviewState.userInfo()
@@ -136,6 +140,8 @@ if __name__ == '__main__':
                         name=resInfo['name'],
                         average=resInfo['average'],
                     )
+                receivedSinceDBFlush = 0
+                print('done.')
                 # console output if required
                 # Note we print the last message idx
                 # and not the reception count here (to compare with input)

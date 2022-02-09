@@ -19,9 +19,9 @@ targets = [
 
 users = [
     ('john', 1.5, False),
-    ('anne', 8.5, False),
+    ('anne', 4.4, False),
     ('geri', 0.5, True),
-    ('botz', 9.0, False),
+    ('botz', 5.0, False),
     ('rita', 2.3, False),
 ]
 

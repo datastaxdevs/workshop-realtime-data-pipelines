@@ -47,7 +47,7 @@ class ReviewRouter(Function):
                     'idx': reviewIdx,
                 }
                 logger.info('Routing "%s" review to its topic' % reviewType)
-                # TODO: for now we stay schemaless on the dest topics!
+                # All topics in this pipeline are schemaless, we JSON-encode:
                 outMessage = json.dumps(outputDict).encode()
                 context.publish(DST_TOPIC_MAP[reviewType], outMessage)
             else:
