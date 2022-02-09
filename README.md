@@ -272,7 +272,7 @@ enjoy the show:
 ./revGenerator/review_generator.py -r 50
 
 # second shell
-./revAnalyzer/review_analyzer.py -r -o -f 100
+./revAnalyzer/review_analyzer.py -r -o -t -f 100
 
 # third shell
 ./tools/reader.py -t rr-restaurant-anomalies

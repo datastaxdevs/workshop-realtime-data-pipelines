@@ -5,6 +5,7 @@ import sys
 import json
 import os
 from dotenv import load_dotenv
+import time
 import atexit
 
 from pulsarTools.tools import getPulsarClient
@@ -47,7 +48,8 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--reviews', help='periodically report reviews', action='store_true', default=False)
     parser.add_argument('-t', '--trolls', help='periodically report troll scores', action='store_true', default=False)
     parser.add_argument('-o', '--outliers', help='report outlier reviews as they come', action='store_true', default=False)
-    parser.add_argument('-f', '--frequency', help='frequency of reporting (message count)', type=int, default=200)
+    parser.add_argument('-f', '--frequency', help='frequency of flushing/reporting (message count)', type=int, default=200)
+    parser.add_argument('-l', '--latencyseconds', help='max time between DB flushes', type=int, default=180)
     args = parser.parse_args()
     #
     client = getPulsarClient()
@@ -92,12 +94,15 @@ if __name__ == '__main__':
     # handing out updates now and then.
     numReceived = 0
     receivedSinceDBFlush = 0
+    lastMsgIdx = 0
+    lastDBFlushTime = time.time()
     while True:
         msg = receiveOrNone(consumer, 50)
         if msg:
             numReceived += 1
             receivedSinceDBFlush += 1
             msgBody = json.loads(msg.data().decode())
+            lastMsgIdx = msgBody['idx']
 
             # let's submit this review to the rolling state
             # (and get notified of whether-outlier as well)
@@ -110,44 +115,20 @@ if __name__ == '__main__':
                 outlierProducer.send(json.dumps(outlierMessage).encode('utf-8'))
             #
             if args.outliers and isOutlier:
-                print('[%6i] Outlier detected: "%s" on "%s" (rev %0.2f != avg %0.2f, idx=%i)' % (
-                    numReceived,
+                print('[%6i] Outlier detected: "%s" on "%s" (rev %0.2f != avg %0.2f)' % (
+                    lastMsgIdx,
                     msgBody['user_id'],
                     msgBody['tgt_name'],
                     msgBody['r_score'],
                     reviewState.targetInfo()[msgBody['tgt_id']]['average'],
-                    msgBody['idx'],
                 ))
             if numReceived % args.frequency == 0:
-                print('[%6i] Writing to DB ... ' % numReceived, end='')
-                # persist latest values to DB
-                restaurantMap = reviewState.targetInfo()
-                reviewerMap = reviewState.userInfo()
-                updateIdSet('restaurant', restaurantMap.keys())
-                updateIdSet('reviewer', reviewerMap.keys())
-                for revID, revInfo in reviewerMap.items():
-                    updateReviewer(
-                        revID,
-                        **revInfo,
-                    )
-                for resID, resInfo in restaurantMap.items():
-                    updateRestaurant(
-                        resID,
-                        **resInfo,
-                    )
-                    insertRestaurantTime(
-                        resID,
-                        name=resInfo['name'],
-                        average=resInfo['average'],
-                    )
-                receivedSinceDBFlush = 0
-                print('done.')
                 # console output if required
                 # Note we print the last message idx
                 # and not the reception count here (to compare with input)
                 if args.reviews:
                     print('[%6i] Restaurant Score Summary:\n%s' % (
-                        msgBody['idx'],
+                        lastMsgIdx,
                         '\n'.join(
                             '                 [%s %6i]   %-18s : %0.2f   (outliers: %6i/%6i)' % (
                                 k,
@@ -162,7 +143,7 @@ if __name__ == '__main__':
                     ))
                 if args.trolls:
                     print('[%6i] Reviewer Summary:\n%s' % (
-                        msgBody['idx'],
+                        lastMsgIdx,
                         '\n'.join(
                             '                 %8s %6i : troll-score = %0.2f (outliers: %6i / %6i). Visits: %s' % (
                                 '"%s"' % k,
@@ -177,3 +158,31 @@ if __name__ == '__main__':
                     ))
             #
             consumer.acknowledge(msg)
+        # regardless whether new messages right now or not,
+        # we may want to flush to DB
+        tooLongElapsed = (time.time() - lastDBFlushTime >= args.latencyseconds) and receivedSinceDBFlush > 0
+        manyItemsPiledUp = receivedSinceDBFlush >= args.frequency
+        if tooLongElapsed or manyItemsPiledUp:
+            print('[%6i] Writing to DB ... ' % lastMsgIdx, end='')
+            # persist latest values to DB
+            restaurantMap = reviewState.targetInfo()
+            reviewerMap = reviewState.userInfo()
+            updateIdSet('restaurant', restaurantMap.keys())
+            updateIdSet('reviewer', reviewerMap.keys())
+            for revID, revInfo in reviewerMap.items():
+                updateReviewer(
+                    revID,
+                    **revInfo,
+                )
+            for resID, resInfo in restaurantMap.items():
+                updateRestaurant(
+                    resID,
+                    **resInfo,
+                )
+                insertRestaurantTime(
+                    resID,
+                    name=resInfo['name'],
+                    average=resInfo['average'],
+                )
+            receivedSinceDBFlush = 0
+            print('done.')
