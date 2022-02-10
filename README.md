@@ -269,10 +269,10 @@ Now start in rapid succession these three commands in the three shells and
 enjoy the show:
 ```
 # first shell
-./revGenerator/review_generator.py -r 50
+./revGenerator/review_generator.py -r 10
 
 # second shell
-./revAnalyzer/review_analyzer.py -r -o -t -f 100
+./revAnalyzer/review_analyzer.py -r -o -t -f 200
 
 # third shell
 ./tools/reader.py -t rr-restaurant-anomalies
@@ -315,35 +315,35 @@ then try to run the following commands one by one and wee what the result looks 
 
 ```
 # What restaurants can be queried?
-curl -X GET \
+curl -s -X GET \
     "${ASTRA_URL_ROOT}/known_ids_per_type/rows/restaurant" \
     -H "accept: application/json" \
     -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
 
 
 # What reviewers can be queried?
-curl -X GET \
+curl -s -X GET \
     "${ASTRA_URL_ROOT}/known_ids_per_type/rows/reviewer" \
     -H "accept: application/json" \
     -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
 
 
 # What's the current status of a restaurant?
-curl -X GET \
+curl -s -X GET \
     "${ASTRA_URL_ROOT}/restaurants_by_id/rows/vegg00" \
     -H "accept: application/json" \
     -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
 
 
 # What's the current status of a reviewer?
-curl -X GET \
+curl -s -X GET \
     "${ASTRA_URL_ROOT}/reviewers_by_id/rows/geri" \
     -H "accept: application/json" \
     -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
 
 
 # What is the timeline of reviews for a restaurant?
-curl -X GET \
+curl -s -X GET \
     "${ASTRA_URL_ROOT}/restaurants_by_id_time/rows/gold_f" \
     -H "accept: application/json" \
     -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool

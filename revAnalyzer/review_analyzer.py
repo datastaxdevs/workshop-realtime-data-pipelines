@@ -185,4 +185,5 @@ if __name__ == '__main__':
                     average=resInfo['average'],
                 )
             receivedSinceDBFlush = 0
+            lastDBFlushTime = time.time()
             print('done.')
