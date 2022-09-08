@@ -17,6 +17,7 @@ It doesn't matter if you join our workshop live or you prefer to do at your own 
 ## 📋 Table of contents
 
 - [**HouseKeeping**](#objectives)
+  - [Objectives](#frequently-asked-questions)
   - [Frequently asked questions](#frequently-asked-questions)
   - [Materials for the Session](#materials-for-the-session)
 - [**Architecture Design**](#user-case)
@@ -109,8 +110,6 @@ we have you covered. In this repository, you'll find everything you need for thi
 
 ## Architecture Design
 
-**Review Troll Squad**: a sample architecture making use of Pulsar and Pulsar Functions for real-time, event-streaming-based data ingestion, cleaning and processing.
-
 _Reviews of various venues (hotels/restaurants), written by various users, keep pouring in. We need a way to clean, normalize and filter them, removing trolls and flagging blatant outlier reviews, and make the running results available to the end user._
 
 <details>
@@ -131,7 +130,6 @@ _Reviews of various venues (hotels/restaurants), written by various users, keep 
 </ul>
 </p>
 </details>
-
 
 <details>
 <summary><b> Generator</b></summary>
@@ -186,14 +184,21 @@ score given in the review.
 
 ## Setup - Initialize your environment
 
+### Create Astra Account
 
-## 1.1 - Démarrage de `Gitpod`
+
+
+### Create Astra Credentials (token)
+
+### Start Gitpod
+
+
 
 [Gitpod](https://www.gitpod.io/) est un IDE 100% dans le cloud. Il s'appuie sur [VS Code](https://github.com/gitpod-io/vscode/blob/gp-code/LICENSE.txt?lang=en-US) et fournit de nombreux outils pour développer dans plusieurs langages.
 
 #### `✅.001`- _Click-Droit_ sur le bouton pour ouvrir Gitpod dans un nouveau onglet sur votre navigateur.
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/datastaxdevs/conference-2022-devoxx)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/datastaxdevs/workshop-realtime-data-pipelines)
 
 ## 1.2 - Apache Cassandra™ dans `Docker`
 
