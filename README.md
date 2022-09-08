@@ -1,4 +1,90 @@
-# README
+# 🎓 Real-Time data pipelines with Apache Pulsar and Apache Cassandra
+
+Welcome to the *RealTime data pipeline with Apache Pulsar and Apache Cassandra** workshop! In this two-hour workshop, we show how to combine scalable database as `Apache Cassandra™` with a poweful streaming platform like `Apache Pulsar`.
+
+
+![](images/splash.png)
+
+It doesn't matter if you join our workshop live or you prefer to do at your own pace, we have you covered. In this repository, you'll find everything you need for this workshop:
+
+> [🔖 Accessing HANDS-ON](#-start-hands-on)
+
+## 📋 Table of contents
+
+1. [Objectives](#1-objectives)
+2. [Frequently asked questions](#2-frequently-asked-questions)
+3. [Materials for the Session](#3-materials-for-the-session)
+4. [Setup Astra account](#)
+5. [LAB1 - Producer and Consumer](#)
+6. [LAB2 - Pulsar functions](#)
+7. [Homework](#7-homework)
+8. [What's NEXT ](#8-whats-next-)
+<p><br/>
+
+## 1. Objectives
+
+1️⃣ **Give you an understanding and how and where to position Apache Cassandra™**
+
+2️⃣ **Give an overview of the NoSQL ecosystem and its rationale**
+
+3️⃣ **Provide an overview of Cassandra Architecture**
+
+4️⃣ **Make you create your first tables and run your first statements**
+
+🚀 **Have fun with an interactive session**
+
+## 2. Frequently asked questions
+
+<p/>
+<details>
+<summary><b> 1️⃣ Can I run this workshop on my computer?</b></summary>
+<hr>
+<p>There is nothing preventing you from running the workshop on your own machine. If you do so, you will need the following:
+<ol>
+<li><b>git</b> installed on your local system
+</ol>
+</p>
+In this readme, we try to provide instructions for local development as well - but keep in mind that the main focus is development on Gitpod, hence <strong>we can't guarantee live support</strong> about local development in order to keep on track with the schedule. However, we will do our best to give you the info you need to succeed.
+</details>
+<p/>
+<details>
+<summary><b> 2️⃣ What other prerequisites are required?</b></summary>
+<hr>
+<ul>
+<li>You will need enough *real estate* on screen, we will ask you to open a few windows and it would not fit on mobiles (tablets should be OK)
+<li>You will need an Astra account: don't worry, we'll work through that in the following
+<li>As "Intermediate level" we expect you to know what java and Spring are. 
+</ul>
+</p>
+</details>
+<p/>
+<details>
+<summary><b> 3️⃣ Do I need to pay for anything for this workshop?</b></summary>
+<hr>
+<b>No.</b> All tools and services we provide here are FREE. FREE not only during the session but also after.
+</details>
+<p/>
+<details>
+<summary><b> 4️⃣ Will I get a certificate if I attend this workshop?</b></summary>
+<hr>
+Attending the session is not enough. You need to complete the homework detailed below and you will get a nice badge that you can share on linkedin or anywhere else *(open badge specification)*
+</details>
+<p/>
+
+## 3. Materials for the Session
+
+It doesn't matter if you join our workshop live or you prefer to work at your own pace,
+we have you covered. In this repository, you'll find everything you need for this workshop:
+
+- [Slide deck](/slides/slides.pdf)
+- [Discord chat](https://dtsx.io/discord)
+- [Questions and Answers](https://community.datastax.com/)
+- [Twitch backup](https://www.twitch.tv/datastaxdevs)
+
+----
+
+# 🏁 Start Hands-on
+
 
 **Review Troll Squad**: a sample architecture making use of Pulsar and Pulsar
 Functions for real-time, event-streaming-based data ingestion, cleaning and processing.
