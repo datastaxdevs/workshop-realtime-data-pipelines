@@ -1,37 +1,57 @@
-# 🎓 Real-Time data pipelines with Apache Pulsar and Apache Cassandra
+## 🎓 Real-Time data pipelines with Apache Pulsar and Apache Cassandra
+
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/datastaxdevs/workshop-realtime-data-pipelines)
+[![License Apache2](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+[![Discord](https://img.shields.io/discord/685554030159593522)](https://discord.com/widget?id=685554030159593522&theme=dark)
 
 Welcome to the *RealTime data pipeline with Apache Pulsar and Apache Cassandra** workshop! In this two-hour workshop, we show how to combine scalable database as `Apache Cassandra™` with a poweful streaming platform like `Apache Pulsar`.
 
+⏲️ **Duration :** 2 hours
+
+🎓 **Level** Beginner to Intermediate
 
 ![](images/splash.png)
 
 It doesn't matter if you join our workshop live or you prefer to do at your own pace, we have you covered. In this repository, you'll find everything you need for this workshop:
 
-> [🔖 Accessing HANDS-ON](#-start-hands-on)
-
 ## 📋 Table of contents
 
-1. [Objectives](#1-objectives)
-2. [Frequently asked questions](#2-frequently-asked-questions)
-3. [Materials for the Session](#3-materials-for-the-session)
-4. [Setup Astra account](#)
-5. [LAB1 - Producer and Consumer](#)
-6. [LAB2 - Pulsar functions](#)
-7. [Homework](#7-homework)
-8. [What's NEXT ](#8-whats-next-)
+- [Objectives](#1-objectives)
+- [Frequently asked questions](#2-frequently-asked-questions)
+- [Materials for the Session](#3-materials-for-the-session)
+- [Use Case](#user case)
+- [**Setup - Initialize your environment**](#)
+  - [Create Astra Account](#)
+  - [Create Astra Credentials (token)](#)
+  - [Start Gitpod)](#)
+- [**LAB1 - Producer and Consumer**](#)
+  - [1.1 Create tenant](#)
+  - [1.2 Create topics](#)
+  - [1.3 Start injector (producer)](#)
+  - [1.4 Visualize messages (consumer)](#)
+- [**LAB2 - Pulsar functions**](#)  
+  - [2.1 Create function](#)
+  - [2.2 Deploy function](#)
+  - [2.3 Run Demo](#)
+- [**LAB3 - Analyzer and Pulsar Sink**](#)  
+  - [3.1 Create DB](#)
+  - [3.2 Create Schema](#)
+  - [3.3 Setup sink](#)
+- [Homework](#7-homework)
+- [What's NEXT ](#8-whats-next-)
 <p><br/>
 
 ## 1. Objectives
 
-1️⃣ **Give you an understanding and how and where to position Apache Cassandra™**
+- 🎯 Give you an understanding and how and where to position Apache Pulsar
 
-2️⃣ **Give an overview of the NoSQL ecosystem and its rationale**
+- 🎯 Give an overview of  streaming and datascience ecosystem**
 
-3️⃣ **Provide an overview of Cassandra Architecture**
+- 🎯 Give you an understanding of Apache Cassandra NoSQL Database
 
-4️⃣ **Make you create your first tables and run your first statements**
+- 🎯 Create your first pipeline with streaming and database.
 
-🚀 **Have fun with an interactive session**
+- 🚀 Have fun with an interactive session
 
 ## 2. Frequently asked questions
 
@@ -41,7 +61,10 @@ It doesn't matter if you join our workshop live or you prefer to do at your own 
 <hr>
 <p>There is nothing preventing you from running the workshop on your own machine. If you do so, you will need the following:
 <ol>
-<li><b>git</b> installed on your local system
+<li><b>git</b>
+<li><b>Python 3.6+</b>
+<li><b>Astra Cli</b>
+<li><b>Pulsar Shell or Pulsar-Client</b>
 </ol>
 </p>
 In this readme, we try to provide instructions for local development as well - but keep in mind that the main focus is development on Gitpod, hence <strong>we can't guarantee live support</strong> about local development in order to keep on track with the schedule. However, we will do our best to give you the info you need to succeed.
@@ -81,51 +104,35 @@ we have you covered. In this repository, you'll find everything you need for thi
 - [Questions and Answers](https://community.datastax.com/)
 - [Twitch backup](https://www.twitch.tv/datastaxdevs)
 
-----
+## Architecture Design
 
-# 🏁 Start Hands-on
+**Review Troll Squad**: a sample architecture making use of Pulsar and Pulsar Functions for real-time, event-streaming-based data ingestion, cleaning and processing.
+
+_Reviews of various venues (hotels/restaurants), written by various users, keep pouring in. We need a way to clean, normalize and filter them, removing trolls and flagging blatant outlier reviews, and make the running results available to the end user._
+
+<details>
+<summary><b> Business Architecture</b></summary>
+
+<img src="./images/current_arch.png"/>
+
+<ul>
+<li>A stream of "events" (messages), some of which are reviews, is poured into a Pulsar topic for "raw reviews".
+<li>A Pulsar function filters out malformed items and those that do not specify their target type (restaurant/hotel). This function takes care of normalizing the incoming reviews, since - as is often the case in real life - certain field names in the incoming reviews can have multiple forms. All reviews are encoded as JSON strings. The Pulsar function singles out hotel and restaurant reviews and routes them, after normalizing their structure, to two specific topics. 
+<li>We happen to be interested in restaurants, so we have a long-running process ("analyzer") performing the actual analysis on these. Heavy artillery, such as AI/ML-based classifiers, code with fat dependencies and the like, would be placed here (i.e outside Pulsar).
+
+<li>The analyzer keeps listening to the restaurant topic and ingests all incoming reviews: it keeps and update a state with key information, such as a rolling average score per each restaurant.
+
+<li>As new items arrive, they are checked if they are "troll reviews" (review text in heavy disagreement with the numeric score) and, if so, discarded. Otherwise they enter the rolling average for the target restaurant.
+
+<li>The analyzer periodically publishes an assessment for users and restaurants to a database, ready to be queried by any service that may need this data. (The output can also go to console if so desired). The destination DB also offers a ready-to-use REST API that allows to retrieve its data with simple HTTP requests, making it easy to build panels and UIs on top of this pipeline. The analyzer also reroutes "outlier reviews" (scores much different than the current rolling average) to another Pulsar topic, for a hypothetical manual inspection of such outliers.
+</ul>
+</p>
+</details>
 
 
-**Review Troll Squad**: a sample architecture making use of Pulsar and Pulsar
-Functions for real-time, event-streaming-based data ingestion, cleaning and processing.
-
-_Reviews of various venues (hotels/restaurants), written by various users, keep pouring in.
-We need a way to clean, normalize and filter them, removing trolls
-and flagging blatant outlier reviews, and make the running results available to the end user._
-
-
-## The use-case
-
-![Current architecture](images/current_arch.png)
-
-A stream of "events" (messages), some of which are reviews, is poured into a Pulsar topic for "raw reviews".
-A Pulsar function filters out malformed items and those that do not specify
-their target type (restaurant/hotel). This function takes care of normalizing the incoming reviews,
-since - as is often the case in real life - certain field names in the incoming reviews can have
-multiple forms. All reviews are encoded as JSON strings.
-
-The Pulsar function singles out hotel and restaurant reviews and routes them,
-after normalizing their structure, to two specific topics. We happen to be interested in restaurants,
-so we have a long-running process ("analyzer") performing the actual analysis on these. Heavy artillery, such as AI/ML-based classifiers, code with fat dependencies
-and the like, would be placed here (i.e. outside Pulsar).
-
-The analyzer keeps listening to the restaurant topic and ingests all incoming reviews: it keeps
-and update a state with key information, such as a rolling average score per each restaurant.
-
-As new items arrive, they are checked if they are "troll reviews" (review text in heavy disagreement
-with the numeric score) and, if so, discarded. Otherwise they enter the rolling average for the
-target restaurant.
-
-The analyzer periodically publishes an assessment for users and restaurants to a database, ready to
-be queried by any service that may need this data. (The output can also go to console if so desired).
-The destination DB also offers a ready-to-use REST API that allows to retrieve its data
-with simple HTTP requests, making it easy to build panels and UIs on top of this pipeline.
-
-The analyzer also reroutes "outlier reviews" (scores much different than the current rolling average)
-to another Pulsar topic, for a hypothetical manual inspection of such outliers.
-
-### Review generation
-
+<details>
+<summary><b> Generator</b></summary>
+<p>
 There is a pseudorandom procedure to generate reviews with features that fluctuate in a predictable
 way: it is all in the `revGenerator` directory.
 
@@ -138,13 +145,13 @@ score and text are also created according to the following rules:
 
 Each venue has a "true" quality that is slowly oscillating in time, see for example these two restaurants:
 
-![Real Values](images/plots/01_real-values.png)
+<img src="./images/plots/01_real-values.png"/>
 
 Each reviewer has an associate amplitude that dictates how widely the scores they produce
 may fluctuate away from the "true" value for that venue at that "time": in this example, the individual
 scores emitted by two different reviewers, having a large and small associated amplitude, are plotted:
 
-![Real Values](images/plots/02_reviews.png)
+<img src="./images/plots/02_reviews.png"/>
 
 While reviews by Rita will presumably all fall in the "expected" region around the current average,
 a large fraction of the reviews by Anne will be too far away from
@@ -154,22 +161,27 @@ Each review comes with an associated text, which in this toy
 example is simply a bunch of words strung together, some positive ("delicious") and some negative ("disgusting").
 Each reviewer, however, has a Boolean "trolliness" flag: if true, then this text is built in strong
 disagreement with the numeric score in the review.
+</p>
+</details>
 
+<details>
+<summary><b> Analyzer</b></summary>
+<p>
 On the **analyzer side**, the reconstructed rolling average roughly follows the "true" quality for
 a venue, and is used to detect "outliers": each review that differs too much from the current rolling
 average is deemed an outlier. Here the rolling average corresponding to the above restaurant is plotted:
 
-![Real Values](images/plots/03_moving-average.png)
+<img src="./images/plots/03_moving-average.png"/>
 
 The analyzer also discards troll reviews and keeps a running 
-counter of them, both per-user and per-restaurant, ready to be exposed with the other data. To do so, a toy version of a sentiment
-analysis is implemented (simply based on some words with positive
+counter of them, both per-user and per-restaurant, ready to be exposed with the other data. To do so, a toy version of a sentiment analysis is implemented (simply based on some words with positive
 and negative connotation) and used to compare with the numeric
 score given in the review.
 
+</p>
+</details>
 
-
-## Setup
+## Setup - Initialize your environment
 
 The setup involves an event streaming platform and a database.
 

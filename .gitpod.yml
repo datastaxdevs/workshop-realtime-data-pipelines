@@ -8,30 +8,17 @@ tasks:
       curl -Ls "https://dtsx.io/get-astra-cli" | bash >> ./install.log
       gp open README.md
     init: | 
-      cd /workspace/workshop-betterreads/tools
-      wget https://downloads.datastax.com/enterprise/cqlsh-astra.tar.gz \
-          && tar xvzf cqlsh-astra.tar.gz \
-          && rm -f cqlsh-astra.tar.gz
+      cd /workspace/workshop-realtime-data-pipelines/tools
+      wget https://github.com/datastax/pulsar/releases/download/ls210_1.1/lunastreaming-shell-2.10.1.1-bin.tar.gz \
+          && tar xvzf lunastreaming-shell-2.10.1.1-bin.tar.gz \
+          && rm -f lunastreaming-shell-2.10.1.1-bin.tar.gz
       curl -OL https://downloads.datastax.com/dsbulk/dsbulk-1.8.0.tar.gz \
           && tar xvzf dsbulk-1.8.0.tar.gz \
           && rm -f dsbulk-1.8.0.tar.gz
       clear
-      cd /workspace/workshop-betterreads
-      nvm install 16.11.1
-      npm install -g npm@latest
-      npm install astra-setup
-      chmod 700 /workspace/workshop-betterreads/cqlsh
+      cd /workspace/workshop-realtime-data-pipelines
     command: |
-      clear
-      cd /workspace/workshop-betterreads
-      npm exec astra-setup workshops better_reads
-      clear
-      set -a
-      source .env
-      set +a
-      cd /workspace/workshop-betterreads/better-reads-webapp
-      mvn test -Dtest=io.javabrains.betterreads.Test01_Connectivity.java
-      cd /workspace/workshop-betterreads
+      
 ports:
   - port: 8080
     onOpen: open-browser
