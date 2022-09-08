@@ -6,19 +6,19 @@ tasks:
       printf 'export PATH="$HOME%s:$PATH"\n' "/.astra/cli" >> $HOME/.bashrc
       printf 'unset JAVA_TOOL_OPTIONS\n' >> $HOME/.bashrc
       curl -Ls "https://dtsx.io/get-astra-cli" | bash >> ./install.log
-      gp open README.md
     init: | 
+      pip install -r /workspace/workshop-realtime-data-pipelines/requirements.txt >> ./install.log
       cd /workspace/workshop-realtime-data-pipelines/tools
       wget https://github.com/datastax/pulsar/releases/download/ls210_1.1/lunastreaming-shell-2.10.1.1-bin.tar.gz \
-          && tar xvzf lunastreaming-shell-2.10.1.1-bin.tar.gz \
+          && tar xvzf lunastreaming-shell-2.10.1.1-bin.tar.gz >> ./install.log \
           && rm -f lunastreaming-shell-2.10.1.1-bin.tar.gz
-      curl -OL https://downloads.datastax.com/dsbulk/dsbulk-1.8.0.tar.gz \
-          && tar xvzf dsbulk-1.8.0.tar.gz \
-          && rm -f dsbulk-1.8.0.tar.gz
       clear
       cd /workspace/workshop-realtime-data-pipelines
     command: |
-      
+      source /home/gitpod/.astra/cli/astra-init.sh
+      clear
+      echo "Ready to thrive"
+      astra setup
 ports:
   - port: 8080
     onOpen: open-browser
