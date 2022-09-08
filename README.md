@@ -1,10 +1,10 @@
-## 🎓 Real-Time data pipelines with Apache Pulsar and Apache Cassandra
+## 🎓 Real-Time data pipelines with Apache Pulsar™ and Apache Cassandra™
 
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/datastaxdevs/workshop-realtime-data-pipelines)
 [![License Apache2](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Discord](https://img.shields.io/discord/685554030159593522)](https://discord.com/widget?id=685554030159593522&theme=dark)
 
-Welcome to the *RealTime data pipeline with Apache Pulsar and Apache Cassandra** workshop! In this two-hour workshop, we show how to combine scalable database as `Apache Cassandra™` with a poweful streaming platform like `Apache Pulsar`.
+Welcome to the *RealTime data pipeline with Apache Pulsar and Apache Cassandra** workshop! In this two-hour workshop, we will show you a sample architecture making use of Apache Pulsar™ and Pulsar Functions for real-time, event-streaming-based data ingestion, cleaning and processing.
 
 ⏲️ **Duration :** 2 hours
 
@@ -16,10 +16,13 @@ It doesn't matter if you join our workshop live or you prefer to do at your own 
 
 ## 📋 Table of contents
 
-- [Objectives](#1-objectives)
-- [Frequently asked questions](#2-frequently-asked-questions)
-- [Materials for the Session](#3-materials-for-the-session)
-- [Use Case](#user case)
+- [**HouseKeeping**](#objectives)
+  - [Frequently asked questions](#frequently-asked-questions)
+  - [Materials for the Session](#materials-for-the-session)
+- [**Architecture Design**](#user-case)
+  - [Architecture overview](#)
+  - [Injector Component](#)
+  - [Analyzer Component](#)
 - [**Setup - Initialize your environment**](#)
   - [Create Astra Account](#)
   - [Create Astra Credentials (token)](#)
@@ -39,9 +42,9 @@ It doesn't matter if you join our workshop live or you prefer to do at your own 
   - [3.3 Setup sink](#)
 - [Homework](#7-homework)
 - [What's NEXT ](#8-whats-next-)
-<p><br/>
+<p>
 
-## 1. Objectives
+## Objectives
 
 - 🎯 Give you an understanding and how and where to position Apache Pulsar
 
@@ -182,6 +185,54 @@ score given in the review.
 </details>
 
 ## Setup - Initialize your environment
+
+
+## 1.1 - Démarrage de `Gitpod`
+
+[Gitpod](https://www.gitpod.io/) est un IDE 100% dans le cloud. Il s'appuie sur [VS Code](https://github.com/gitpod-io/vscode/blob/gp-code/LICENSE.txt?lang=en-US) et fournit de nombreux outils pour développer dans plusieurs langages.
+
+#### `✅.001`- _Click-Droit_ sur le bouton pour ouvrir Gitpod dans un nouveau onglet sur votre navigateur.
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/datastaxdevs/conference-2022-devoxx)
+
+## 1.2 - Apache Cassandra™ dans `Docker`
+
+> ℹ️ Lors du premier copier-coller dans `Gitpod` le navigateur vous invite à autoriser les copies depuis le presse-papier, il est nécessaire de le faire.
+
+Lorsque Gitpod est démarré, localiser le terminal `cassandra-docker`. Il devrait contenir uniquement un message en bleu.
+
+```
+------------------------------------------------------------
+---        Bienvenue à Devoxx France 2022                ---
+--           Local Cassandra (Docker)                    ---
+------------------------------------------------------------
+```
+
+### 1.2.1 - Démarrage du cluster
+
+Dans le répertoire `labs` repérer le fichier `docker-compose.yml`. Nous allons utiliser l'[image officielle Docker Apache Cassandra™](https://hub.docker.com/_/cassandra/).
+
+#### `✅.002`- Ouvrir le fichier et visualiser comment le `seed` est un service séparé des autres nœuds. La recommandation est de 2 à 3 `seeds` par datacenter (anneau).
+
+```bash
+gp open /workspace/conference-2022-devoxx/labs/docker-compose.yml
+```
+
+#### `✅.003`- Démarrer 2 noeuds avec `docker-compose`
+
+```bash
+cd /workspace/conference-2022-devoxx/labs/
+docker-compose up -d
+```
+
+> 🖥️ Résultat
+>
+> ```
+> [+] Running 3/3
+>  ⠿ Network labs_cassandra           Created      0.0s
+>  ⠿ Container labs-dc1_seed-1        Started      0.4s
+>  ⠿ Container labs-dc1_noeud-1       Started      1.2s
+> ```
 
 The setup involves an event streaming platform and a database.
 
