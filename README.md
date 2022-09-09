@@ -16,19 +16,19 @@ Welcome to the *RealTime data pipeline with Apache Pulsar and Apache Cassandra**
 
 ## 📋 Table of contents
 
-- [**HouseKeeping**](#objectives)
-  - [Objectives](#frequently-asked-questions)
+- **HouseKeeping**
+  - [Objectives](#objectives)
   - [Frequently asked questions](#frequently-asked-questions)
   - [Materials for the Session](#materials-for-the-session)
-- [**Architecture Design**](#user-case)
-  - [Architecture overview](#)
-  - [Injector Component](#)
-  - [Analyzer Component](#)
-- [**Setup - Initialize your environment**](#)
-  - [S.1 Create Astra Account](#)
-  - [S.2 Create Astra Credentials (token)](#)
-  - [S.3 Start Gitpod IDE](#)
-  - [S.4 Setup `Astra CLI`](#)
+- **Architecture Design**
+  - [Architecture overview](#architecture-overview)
+  - [Injector Component](#injector-component)
+  - [Analyzer Component](#analyzer-component)
+- [**Setup - Initialize your environment**](#setup---initialize-your-environment)
+  - [S.1 Create Astra Account](#-s1-create-astra-account)
+  - [S.2 Create Astra Credentials (token)](s#-s2-create-astra-credentials-token)
+  - [S.3 Start Gitpod IDE](#-s3-start-gitpod-ide)
+  - [S.4 Setup `Astra CLI`](#-s4--setup-astra-cli)
 - [**LAB1 - Producer and Consumer**](#)
   - [1.1 Create tenant](#)
   - [1.2 Create topics](#)
@@ -172,7 +172,6 @@ disagreement with the numeric score in the review.
 </p>
 </details>
 
-
 ### Analyzer Component
 
 <img src="./images/plots/03_moving-average.png"/>
@@ -220,9 +219,7 @@ Skip this step is you already have a token. You can reuse the same token in our 
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/datastaxdevs/workshop-realtime-data-pipelines) *(right-click -> open in new TAB)*
 
-
-
-#### ✅ S.4  Setup Astra CLI by providing your application token
+#### ✅ S.4  Setup Astra CLI
 
 - Provide your token
 
@@ -264,68 +261,84 @@ astra setup
 > Happy Coding !
 > ```
 
-- List your existing Astra DB databases:
+- List your existing Users.
 
 ```
-astra db list
+astra user list
 ```
 
 > 🖥️ Output
 >
 > ```
-> +---------------------+--------------------------------------+---------------------+----------------+
-> | Name                | id                                   | Default Region      | Status         |
-> +---------------------+--------------------------------------+---------------------+----------------+
-> | workshops           | bb61cfd6-2702-4b19-97b6-3b89a04c9be7 | us-east-1           | ACTIVE         |
-> +---------------------+--------------------------------------+---------------------+----------------+
+> +--------------------------------------+-----------------------------+---------------------+
+> | User Id                              | User Email                  | Status              |
+> +--------------------------------------+-----------------------------+---------------------+
+> | b665658a-ae6a-4f30-a740-2342a7fb469c | cedrick.lunven@datastax.com | active              |
+> +--------------------------------------+-----------------------------+---------------------+
 > ```
 
+#### ✅ S.5 Create your database
 
-
-[Gitpod](https://www.gitpod.io/) est un IDE 100% dans le cloud. Il s'appuie sur [VS Code](https://github.com/gitpod-io/vscode/blob/gp-code/LICENSE.txt?lang=en-US) et fournit de nombreux outils pour développer dans plusieurs langages.
-
-#### `✅.001`- _Click-Droit_ sur le bouton pour ouvrir Gitpod dans un nouveau onglet sur votre navigateur.
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/datastaxdevs/workshop-realtime-data-pipelines)
-
-## 1.2 - Apache Cassandra™ dans `Docker`
-
-> ℹ️ Lors du premier copier-coller dans `Gitpod` le navigateur vous invite à autoriser les copies depuis le presse-papier, il est nécessaire de le faire.
-
-Lorsque Gitpod est démarré, localiser le terminal `cassandra-docker`. Il devrait contenir uniquement un message en bleu.
+- Create database `workshops` and keyspace `trollsquad` if they do not exist:
 
 ```
-------------------------------------------------------------
----        Bienvenue à Devoxx France 2022                ---
---           Local Cassandra (Docker)                    ---
-------------------------------------------------------------
+astra db create workshops -k trollsquad --if-not-exist --wait
 ```
 
-### 1.2.1 - Démarrage du cluster
+Let's analyze the command:
+| Chunk         | Description     |
+|--------------|-----------|
+| `db create` | Operation executed `create` in group `db`  |
+| `workshops` | Name of the database, our argument |
+|`-k trollsquad` | Name of the keyspace, a db can contains multiple keyspaces |
+| `--if-not-exist` | Flag for itempotency creating only what if needed |
+| `--wait` | Make the command blocking until all expected operations are executed (timeout is 180s) |
 
-Dans le répertoire `labs` repérer le fichier `docker-compose.yml`. Nous allons utiliser l'[image officielle Docker Apache Cassandra™](https://hub.docker.com/_/cassandra/).
 
-#### `✅.002`- Ouvrir le fichier et visualiser comment le `seed` est un service séparé des autres nœuds. La recommandation est de 2 à 3 `seeds` par datacenter (anneau).
+> **Note**: If the database already exist but has not been used for while the status will be `HIBERNATED`. The previous command will resume the db an create the new keyspace but it can take about a minute to execute.
 
-```bash
-gp open /workspace/conference-2022-devoxx/labs/docker-compose.yml
+
+- Check the status of database `workshops`
+
+```
+astra db status workshops
 ```
 
-#### `✅.003`- Démarrer 2 noeuds avec `docker-compose`
-
-```bash
-cd /workspace/conference-2022-devoxx/labs/
-docker-compose up -d
-```
-
-> 🖥️ Résultat
+> 🖥️ Output
 >
 > ```
-> [+] Running 3/3
->  ⠿ Network labs_cassandra           Created      0.0s
->  ⠿ Container labs-dc1_seed-1        Started      0.4s
->  ⠿ Container labs-dc1_noeud-1       Started      1.2s
+> [ INFO ] - Database 'workshops' has status 'ACTIVE'
 > ```
+
+- Get the informations for your database including the keyspace list
+
+```
+astra db get workshops
+```
+
+> 🖥️ Output
+>
+> ```
+> +------------------------+-----------------------------------------+
+> | Attribute              | Value                                   |
+> +------------------------+-----------------------------------------+
+> | Name                   | workshops                               |
+> | id                     | bb61cfd6-2702-4b19-97b6-3b89a04c9be7    |
+> | Status                 | ACTIVE                                  |
+> | Default Cloud Provider | AWS                                     |
+> | Default Region         | us-east-1                               |
+> | Default Keyspace       | trollsquad                         |
+> | Creation Time          | 2022-08-29T06:13:06Z                    |
+> |                        |                                         |
+> | Keyspaces              | [0] trollsquad                         |
+> |                        |                                         |
+> |                        |                                         |
+> | Regions                | [0] us-east-1                           |
+> |                        |                                         |
+> +------------------------+-----------------------------------------+
+> ```
+
+## LAB1 - Producer and Consumer
 
 The setup involves an event streaming platform and a database.
 
@@ -334,6 +347,7 @@ The setup involves an event streaming platform and a database.
 An Astra DB instance is required to collect the data for persistence.
 What is needed for the Astra DB part is the creation of a DB (preferrably
 called `workshops`) and a keyspace in it (called `trollsquad`) as described
+
 [here](https://github.com/datastaxdevs/awesome-astra/wiki/Create-an-AstraDB-Instance).
 Then you should create a DB Token (role "API Read/Write User" is sufficient)
 as described [here](https://github.com/datastaxdevs/awesome-astra/wiki/Create-an-Astra-Token)
