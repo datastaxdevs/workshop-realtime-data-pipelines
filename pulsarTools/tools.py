@@ -2,19 +2,15 @@
 
 import os
 import pulsar
-
 from dotenv import load_dotenv
 
-
 load_dotenv()
-
 
 def _getRegularPulsarClient():
     """Specialization for regular Pulsar."""
     PULSAR_CLIENT_URL = os.environ['PULSAR_CLIENT_URL']
     client = pulsar.Client(PULSAR_CLIENT_URL)
     return client
-
 
 def _getAstraStreamingClient():
     """Specialization for Astra Streaming connection."""
@@ -34,7 +30,6 @@ def _getAstraStreamingClient():
         tls_trust_certs_file_path=TRUST_CERTS,
     )
     return client
-
 
 def getPulsarClient():
     """Create a Pulsar connection by using the dotenv variables."""

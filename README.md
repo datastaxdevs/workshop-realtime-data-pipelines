@@ -340,38 +340,51 @@ astra db get workshops
 
 ## LAB1 - Producer and Consumer
 
-The setup involves an event streaming platform and a database.
+#### 1.1 Create tenant
 
-### Database
+> **Note**: Your tenant name must start with a lowercase alphabetic character. It can only contain lowercase alphanumeric characters, and hyphens (kebab-case), and the maximum length is 25.
 
-An Astra DB instance is required to collect the data for persistence.
-What is needed for the Astra DB part is the creation of a DB (preferrably
-called `workshops`) and a keyspace in it (called `trollsquad`) as described
+- Generate a tenant name
 
-[here](https://github.com/datastaxdevs/awesome-astra/wiki/Create-an-AstraDB-Instance).
-Then you should create a DB Token (role "API Read/Write User" is sufficient)
-as described [here](https://github.com/datastaxdevs/awesome-astra/wiki/Create-an-Astra-Token)
-and keep the "Token" value handy.
+A tenant name should also BE UNIQUE IN ALL CLUSTER. So to get a unique name let's generate one randomly.
 
-### Pulsar/Astra Streaming
+```
+export TENANT="trollsquad-$(openssl rand -base64 12)"
+echo $TENANT
+touch .env
+echo "export ASTRA_DB_CLIENT_ID=token" >> .env
+ASTRA_DB_CLIENT_SECRET=`astra config get default --key ASTRA_DB_APPLICATION_TOKEN`
+echo "export ASTRA_DB_CLIENT_SECRET=${ASTRA_DB_CLIENT_SECRET}" >> .env
+
+```
 
 
-A Pulsar instance is needed to provide the streaming infrastructure. This demo
-can run both on a standard Pulsar installation or an Astra Streaming instance:
-the following instructions will cover both cases.
 
-Choose your path:
+https://docs.datastax.com/en/astra-streaming/docs/astream-quick-start.html#create-a-tenant
 
-#### If you use Astra Streaming
-
-The Streaming creation and retrieval of secrets is described in detail
-[here](https://github.com/datastaxdevs/awesome-astra/wiki/Create-an-AstraStreaming-Topic).
-
-Create an Astra Streaming tenant in your Astra Account:
-Call it e.g. something like `trollsquad` (beware: tenant names are unique,
+Create an Astra Streaming tenant in your Astra Account:Call it e.g. something like `trollsquad` (beware: tenant names are unique,
 pick yours and write it down for later).
 
 Use the `default` namespace in that tenant.
+
+```
+export TENANT="trollsquad-$(openssl rand -base64 12)"
+astra streaming create TENANT
+```
+
+
+#### 1.2 Create topics
+
+The Streaming creation and retrieval of secrets is described in detail
+
+https://awesome-astra.github.io/docs/pages/astra/create-topic/
+
+https://docs.datastax.com/en/astra-streaming/docs/astream-quick-start.html#create-a-topic
+
+
+#### 1.3 Start injector (producer)
+#### 1.4 Visualize messages (consumer)
+
 
 Create (with the Astra UI) the four topics (`persistent=yes`, `partitioned=no`):
 `rr-raw-in`, `rr-hotel-reviews`, `rr-restaurant-reviews`
