@@ -12,7 +12,7 @@ Welcome to the *RealTime data pipeline with Apache Pulsar and Apache Cassandra**
 
 ![](images/splash.png)
 
-It doesn't matter if you join our workshop live or you prefer to do at your own pace, we have you covered. In this repository, you'll find everything you need for this workshop:
+> [🔖 Accessing HANDS-ON](#-start-hands-on)
 
 ## 📋 Table of contents
 
@@ -25,9 +25,10 @@ It doesn't matter if you join our workshop live or you prefer to do at your own 
   - [Injector Component](#)
   - [Analyzer Component](#)
 - [**Setup - Initialize your environment**](#)
-  - [Create Astra Account](#)
-  - [Create Astra Credentials (token)](#)
-  - [Start Gitpod)](#)
+  - [S.1 Create Astra Account](#)
+  - [S.2 Create Astra Credentials (token)](#)
+  - [S.3 Start Gitpod IDE](#)
+  - [S.4 Setup `Astra CLI`](#)
 - [**LAB1 - Producer and Consumer**](#)
   - [1.1 Create tenant](#)
   - [1.2 Create topics](#)
@@ -37,7 +38,7 @@ It doesn't matter if you join our workshop live or you prefer to do at your own 
   - [2.1 Create function](#)
   - [2.2 Deploy function](#)
   - [2.3 Run Demo](#)
-- [**LAB3 - Analyzer and Pulsar Sink**](#)  
+- [**LAB3 - Pulsar Sinks and Analyzer**](#)  
   - [3.1 Create DB](#)
   - [3.2 Create Schema](#)
   - [3.3 Setup sink](#)
@@ -57,7 +58,7 @@ It doesn't matter if you join our workshop live or you prefer to do at your own 
 
 - 🚀 Have fun with an interactive session
 
-## 2. Frequently asked questions
+## Frequently asked questions
 
 <p/>
 <details>
@@ -98,7 +99,7 @@ Attending the session is not enough. You need to complete the homework detailed 
 </details>
 <p/>
 
-## 3. Materials for the Session
+## Materials for the session
 
 It doesn't matter if you join our workshop live or you prefer to work at your own pace,
 we have you covered. In this repository, you'll find everything you need for this workshop:
@@ -112,10 +113,12 @@ we have you covered. In this repository, you'll find everything you need for thi
 
 _Reviews of various venues (hotels/restaurants), written by various users, keep pouring in. We need a way to clean, normalize and filter them, removing trolls and flagging blatant outlier reviews, and make the running results available to the end user._
 
-<details>
-<summary><b> Business Architecture</b></summary>
+### Architecture overview
 
 <img src="./images/current_arch.png"/>
+
+<details>
+<summary><b> Show Detailed explanations</b></summary>
 
 <ul>
 <li>A stream of "events" (messages), some of which are reviews, is poured into a Pulsar topic for "raw reviews".
@@ -131,8 +134,12 @@ _Reviews of various venues (hotels/restaurants), written by various users, keep 
 </p>
 </details>
 
+### Injector Component
+
+<img src="./images/plots/02_reviews.png"/>
+
 <details>
-<summary><b> Generator</b></summary>
+<summary><b> Show Details</b></summary>
 <p>
 There is a pseudorandom procedure to generate reviews with features that fluctuate in a predictable
 way: it is all in the `revGenerator` directory.
@@ -165,8 +172,13 @@ disagreement with the numeric score in the review.
 </p>
 </details>
 
+
+### Analyzer Component
+
+<img src="./images/plots/03_moving-average.png"/>
+
 <details>
-<summary><b> Analyzer</b></summary>
+<summary><b> Show Details</b></summary>
 <p>
 On the **analyzer side**, the reconstructed rolling average roughly follows the "true" quality for
 a venue, and is used to detect "outliers": each review that differs too much from the current rolling
@@ -182,15 +194,91 @@ score given in the review.
 </p>
 </details>
 
+--- 
+
+# 🏁 Start Hands-on
+
 ## Setup - Initialize your environment
 
-### Create Astra Account
+#### ✅ S.1 Create Astra Account
+
+_**`ASTRA`** is the simplest way to run both Cassandra and Pulsat with zero operations at all - just push the button and get your clusters. No credit card required_
+
+Leveraging [Database creation guide](https://awesome-astra.github.io/docs/pages/astra/create-instance/#c-procedure) create a database. *Right-Click the button* with *Open in a new TAB.*
+
+<a href="https://astra.dev/yt-9-14"><img src="images/create_astra_db_button.png?raw=true" /></a>
+
+#### ✅ S.2 Create Astra Credentials (token)
+
+Create an application token by following <a href="https://awesome-astra.github.io/docs/pages/astra/create-token/" target="_blank">these instructions</a>. 
+
+Skip this step is you already have a token. You can reuse the same token in our other workshops, too.
+
+> Your token should look like: `AstraCS:....`
+
+#### ✅ S.3 Start Gitpod IDE
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/datastaxdevs/workshop-realtime-data-pipelines) *(right-click -> open in new TAB)*
 
 
 
-### Create Astra Credentials (token)
+#### ✅ S.4  Setup Astra CLI by providing your application token
 
-### Start Gitpod
+- Provide your token
+
+```
+astra setup
+```
+
+> 🖥️ Output
+>
+> ```
+> +-------------------------------+
+> +-     Astra CLI SETUP         -+
+> +-------------------------------+
+> 
+> Welcome to Astra Cli. We will guide you to start.
+> 
+> [Astra Setup]
+> To use the cli you need to:
+ > • Create an Astra account on : https://astra.datastax.com
+ > • Create an Authentication token following: https://dtsx.io/create-astra-token
+> 
+> [Cli Setup]
+> You will be asked to enter your token, it will be saved locally in ~/. astrarc
+> 
+> • Enter your token (starting with AstraCS) : 
+> AstraCS:AAAAAA
+> [ INFO ] - Configuration Saved.
+> 
+> 
+> [cedrick.lunven@gmail.com]
+> ASTRA_DB_APPLICATION_TOKEN=AstraCS:AAAAAAAA
+> 
+> [What's NEXT ?]
+> You are all set.(configuration is stored in ~/.astrarc) You can now:
+>    • Use any command, 'astra help' will get you the list
+>    • Try with 'astra db list'
+>    • Enter interactive mode using 'astra'
+> 
+> Happy Coding !
+> ```
+
+- List your existing Astra DB databases:
+
+```
+astra db list
+```
+
+> 🖥️ Output
+>
+> ```
+> +---------------------+--------------------------------------+---------------------+----------------+
+> | Name                | id                                   | Default Region      | Status         |
+> +---------------------+--------------------------------------+---------------------+----------------+
+> | workshops           | bb61cfd6-2702-4b19-97b6-3b89a04c9be7 | us-east-1           | ACTIVE         |
+> +---------------------+--------------------------------------+---------------------+----------------+
+> ```
 
 
 

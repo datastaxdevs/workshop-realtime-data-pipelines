@@ -15,6 +15,7 @@ tasks:
       clear
       cd /workspace/workshop-realtime-data-pipelines
     command: |
+      unset JAVA_TOOL_OPTIONS
       source /home/gitpod/.astra/cli/astra-init.sh
       clear
       echo "Ready to thrive"
