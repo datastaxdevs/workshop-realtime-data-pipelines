@@ -344,55 +344,205 @@ astra db get workshops
 
 > **Note**: Your tenant name must start with a lowercase alphabetic character. It can only contain lowercase alphanumeric characters, and hyphens (kebab-case), and the maximum length is 25.
 
-- Generate a tenant name
+- Generate an unique tenant name
 
 A tenant name should also BE UNIQUE IN ALL CLUSTER. So to get a unique name let's generate one randomly.
 
 ```
 export TENANT="trollsquad-$(openssl rand -base64 12)"
 echo $TENANT
-touch .env
-echo "export ASTRA_DB_CLIENT_ID=token" >> .env
-ASTRA_DB_CLIENT_SECRET=`astra config get default --key ASTRA_DB_APPLICATION_TOKEN`
-echo "export ASTRA_DB_CLIENT_SECRET=${ASTRA_DB_CLIENT_SECRET}" >> .env
-
 ```
 
+> 🖥️ Output (*faked, I am not that lucky*)
+>
+> ```
+> trollsquad-abcdefghijkl
+>```
 
+- Create the tenant using the generated name
 
-https://docs.datastax.com/en/astra-streaming/docs/astream-quick-start.html#create-a-tenant
+You can create a tenant from the user interface using [this tutorial](https://docs.datastax.com/en/astra-streaming/docs/astream-quick-start.html#create-a-tenant) but we will not use this today.
 
-Create an Astra Streaming tenant in your Astra Account:Call it e.g. something like `trollsquad` (beware: tenant names are unique,
-pick yours and write it down for later).
+We will use the CLI for everyone to share the same values for regions and cloud provider. We will default all values for simplicity and because they are harcoded in the configuration file.
 
-Use the `default` namespace in that tenant.
+Let's analyze the command:
+| Variable         | Value     |
+|--------------|-----------|
+| `tenant name` | Your tenant name $TENANT  |
+| `namespace` | `default` |
+|`-k trollsquad` | Name of the keyspace, a db can contains multiple keyspaces |
+| `--if-not-exist` | Flag for itempotency creating only what if needed |
+| `--wait` | Make the command blocking until all expected operations are executed (timeout is 180s) |
 
 ```
-export TENANT="trollsquad-$(openssl rand -base64 12)"
-astra streaming create TENANT
+astra streaming create ${TENANT}
 ```
 
+- List your tenants
+
+```
+astra streaming list
+```
+
+- Start `Pulsar-shell`
+
+> **Note** Pulsar shell is a fast and flexible shell for Pulsar cluster management, messaging, and more. It's great for quickly switching between different clusters, and can modify cluster or tenant configurations in an instant.
+
+Astra CLI will download and install the software if needed. Then it will generate a `client.conf` based on the tenant name you provide.
+
+```
+astra streaming pulsar-shell ${TENANT}
+```
 
 #### 1.2 Create topics
 
-The Streaming creation and retrieval of secrets is described in detail
+- Show namespaces 
 
-https://awesome-astra.github.io/docs/pages/astra/create-topic/
+```
+admin namespaces list  ${TENANT}
+```
 
-https://docs.datastax.com/en/astra-streaming/docs/astream-quick-start.html#create-a-topic
+> 🖥️ Output
+>
+> ```
+> trollsquad-abcdefghijkl/default
+>```
 
+- Show topics (empty)
 
-#### 1.3 Start injector (producer)
-#### 1.4 Visualize messages (consumer)
+```bash
+admin topics list ${TENANT}/default
+```
 
+- Create topics
 
-Create (with the Astra UI) the four topics (`persistent=yes`, `partitioned=no`):
-`rr-raw-in`, `rr-hotel-reviews`, `rr-restaurant-reviews`
+Create the four topics `rr-raw-in`, `rr-hotel-reviews`, `rr-restaurant-reviews`
 and `rr-restaurant-anomalies`.
 
-Retrieve the Broker Service URL and the Streaming Token (again, see [here](https://github.com/datastaxdevs/awesome-astra/wiki/Create-an-AstraStreaming-Topic#-step-4-retrieve-the-broker-url)).
+You can create topics through the user interface following this [official documentation](https://docs.datastax.com/en/astra-streaming/docs/astream-quick-start.html#create-a-topic) and [awesome-astra](https://awesome-astra.github.io/docs/pages/astra/create-topic/). But here we will keep leveraging on `pulsar-shell`.
 
-**Function:**
+```bash
+admin topics create persistent://${TENANT}/default/rr-raw-in
+admin topics create persistent://${TENANT}/default/rr-hotel-reviews
+admin topics create persistent://${TENANT}/default/rr-restaurant-reviews
+admin topics create persistent://${TENANT}/default/rr-restaurant-anomalies
+```
+
+- Show topics
+
+```
+admin topics list ${TENANT}/default
+```
+
+#### 1.3 Start injector (producer)
+
+- Create `.env` as configuration file
+
+```
+cp .env.sample .env
+ASTRA_DB_ID=`astra db get workshops --key id`
+echo "export ASTRA_DB_ID=${ASTRA_DB_ID}" >> .env
+
+ASTRA_DB_APP_TOKEN=`astra config get default --key ASTRA_DB_APPLICATION_TOKEN`
+echo "export ASTRA_DB_APP_TOKEN=${ASTRA_DB_APP_TOKEN}" >> .env
+
+echo "export TENANT=${TENANT}" >> .env
+
+PULSAR_TOKEN=`astra streaming get ${TENANT} --key pulsar-token`
+echo "export PULSAR_TOKEN=${PULSAR_TOKEN}" >> .env
+```
+
+- Show `.env` file, it will be loaded from python
+
+```bash
+cat .env
+```
+
+> 🖥️ Output
+>
+> ```
+> ######################
+> # Astra Streaming
+> ######################
+> 
+> # Default region with the CLI
+> BROKER_URL="pulsar+ssl://pulsar-aws-useast2.streaming.datastax.com:6651"
+> 
+> # Keep default namespace
+> NAMESPACE="default"
+> 
+> # Topics
+> RAW_TOPIC="rr-raw-in"
+> RESTAURANT_TOPIC="rr-restaurant-reviews"
+> ANOMALIES_TOPIC="rr-restaurant-anomalies"
+> 
+> ################
+> # Astra DB 
+> ################
+>
+> # Default region with the CLI
+> ASTRA_DB_REGION="us-east-1"
+>
+> # Default keyspace name is trollsquad
+> ASTRA_DB_KEYSPACE="trollsquad"
+>
+> ASTRA_DB_ID="..."
+> ASTRA_DB_APP_TOKEN="..."
+> TENANT="..."
+> PULSAR_TOKEN="..."
+>```
+
+- Install dependencies
+
+```
+pip install -r requirements.txt
+```
+
+- Start the generator
+
+```
+./revGenerator/review_generator.py -r 10
+```
+
+#### 1.4 Visualize messages (consumer)
+
+```
+client consume persistent://${TENANT}/default/rr-raw-in -s consume_log
+```
+
+### LAB2 - Pulsar functions
+
+#### 2.1 Create function
+
+```
+sed ___TENANT___ ${TENANT} ./pulsar_routing_function/review_router.py
+cat ./pulsar_routing_function/review_router.py
+```
+
+#### 2.2 Deploy function
+
+```bash
+admin functions list --tenant=trollsquad-2022 --namespace=default
+```
+
+```bash
+admin functions create \
+  --py ./pulsar_routing_function/review_router.py \
+  --classname review_router.ReviewRouter \
+  --tenant ${TENANT} \
+  --namespace default \
+  --name rrouter-function \
+  --inputs rr-raw-in
+  ```
+
+```bash
+admin functions delete \
+  --tenant ${TENANT} \
+  --namespace default \
+  --name rrouter-function
+```
+
+#### 2.3 Run Demo
 
 In the Astra UI, click on your tenant and go to the "Functions" tab.
 Hit "Create Function".
@@ -413,110 +563,8 @@ When creating the function through the Astra Streaming UI:
 The function will display as "Initializing" in the listing for some time
 (20 s perhaps), then "Running". You're all set now.
 
-#### If you use standard Pulsar
-
-We assume in the following a [fresh dockerized Pulsar installation](https://pulsar.apache.org/docs/en/standalone-docker/), i.e.
-obtained with
-
-```
-docker run                                          \
-    -it                                             \
-    -p 6650:6650                                    \
-    -p 8080:8080                                    \
-    --mount source=pulsardata,target=/pulsar/data   \
-    --mount source=pulsarconf,target=/pulsar/conf   \
-    apachepulsar/pulsar:2.9.1                       \
-    bin/pulsar                                      \
-    standalone
-```
-
-(note that ports 6650 and 8080 are made accessible from outside docker: we are going to take advantage of this fact.)
-
-Spawn a shell on the Pulsar machine (here and in the following
-we assume variable `CONTAINER_ID` contains the name of the Pulsar container):
-
-    docker exec -it ${CONTAINER_ID} bash
-
-and create the four required topics with
-```
-# this should output nothing
-./bin/pulsar-admin topics list public/default
-
-./bin/pulsar-admin topics create persistent://public/default/rr-raw-in
-./bin/pulsar-admin topics create persistent://public/default/rr-hotel-reviews
-./bin/pulsar-admin topics create persistent://public/default/rr-restaurant-reviews
-./bin/pulsar-admin topics create persistent://public/default/rr-restaurant-anomalies
-
-# this should list the four created topics
-./bin/pulsar-admin topics list public/default
-```
-
 **Function:**
 
-Create a directory in the Pulsar container to host the function file:
-```
-mkdir /root/functions
-```
-
-Next, carry the Python file (containing the Pulsar function) to the Docker instance
-and install it as a Pulsar function:
-
-    # IN YOUR LOCAL SHELL:
-    docker cp pulsar_routing_function/review_router.py ${CONTAINER_ID}:/root/functions
-
-```
-# Back to the Pulsar machine shell
-ls /root/functions    # check py file is there
-
-./bin/pulsar-admin functions create \
-  --py /root/functions/review_router.py \
-  --classname review_router.ReviewRouter \
-  --tenant public \
-  --namespace default \
-  --name rrouter-function \
-  --inputs rr-raw-in
-
-./bin/pulsar-admin functions list \
-  --tenant public \
-  --namespace default
-```
-
-(You would delete it, should the need arise, with `./bin/pulsar-admin functions delete --tenant public --namespace default --name rrouter-function`).
-
-The Pulsar setup is done.
-
-### Local settings
-
-Now that the Pulsar setup is done, let's turn to local configuration.
-
-Copy the `.env.sample` file to `.env` and edit it:
-
-`PULSAR_MODE` should match whether you use Astra Streaming or standard Pulsar.
-In the former case, paste the values you obtained earlier for the streaming
-connection/credentials in the `ASTRA_STREAMING_BROKER_URL` and
-`ASTRA_STREAMING_TOKEN` variables.
-In the latter case (standalone Pulsar, again assuming a simple local dockerized
-installation) you are good with inserting the URL to your local Pulsar in
-`PULSAR_CLIENT_URL` (probably `docker inspect ${CONTAINER_ID}` may help).
-
-Make sure `TENANT` and `NAMESPACE` match your setup (the former is likely
-`public` on a local Pulsar and is whatever tenant name you chose if you are
-on Astra Streaming; the latter is most likely just `default`).
-
-Unless you got creative with the topic names, those should be all
-right as they are.
-
-Next is the Astra DB part: take the token you created earlier for the DB
-and paste it to `ASTRA_DB_APP_TOKEN`, while the values for
-`ASTRA_DB_ID`, `ASTRA_DB_REGION` and `ASTRA_DB_KEYSPACE` are all to be found in the
-main dashboard of your Astra UI.
-
-### Python environment
-
-Create a Python 3.6+ virtual environment, install the dependencies
-in `requirements.txt` and also add the repo's root directory to the
-`PYTHONPATH`. You should be in this virtual environment in all Python commands
-you will soon start.
 
 
 
