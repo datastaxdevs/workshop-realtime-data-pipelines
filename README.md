@@ -207,7 +207,8 @@ _**`ASTRA`** is the simplest way to run both Cassandra and Pulsat with zero oper
 
 Leveraging [Database creation guide](https://awesome-astra.github.io/docs/pages/astra/create-instance/#c-procedure) create a database. *Right-Click the button* with *Open in a new TAB.*
 
-<a href="https://astra.dev/yt-9-14"><img src="images/create_astra_db_button.png?raw=true" /></a>
+
+<a href="https://astra.dev/yt-9-14"><img src="https://dabuttonfactory.com/button.png?t=Sign+In+to+Astra&f=Open+Sans-Bold&ts=16&tc=fff&hp=20&vp=10&c=11&bgt=unicolored&bgc=f90" /></a>
 
 #### ✅ S.2 Create Astra Credentials (token)
 
@@ -219,15 +220,13 @@ Skip this step is you already have a token. You can reuse the same token in our 
 
 #### ✅ S.3 Start Gitpod IDE
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/datastaxdevs/workshop-realtime-data-pipelines) *(right-click -> open in new TAB)*
+Gitpod is an IDE based on VSCode deployed in the cloud.
+
+<a href="https://gitpod.io/#https://github.com/datastaxdevs/workshop-realtime-data-pipelines"><img src="https://dabuttonfactory.com/button.png?t=Open+Gitpod&f=Open+Sans-Bold&ts=16&tc=fff&hp=20&vp=10&c=11&bgt=unicolored&bgc=f90" /></a>
 
 #### ✅ S.4  Setup Astra CLI
 
-- Provide your token
-
-```
-astra setup
-```
+When the IDE finish loading your are asked to provide your Astra Token
 
 > 🖥️ Output
 >
