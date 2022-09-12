@@ -223,8 +223,11 @@ Skip this step is you already have a token. You can reuse the same token in our 
 
 Gitpod is an IDE based on VSCode deployed in the cloud.
 
+> ↗️ _Right Click and select open as a new Tab..._
+
 <a href="https://gitpod.io/#https://github.com/datastaxdevs/workshop-realtime-data-pipelines"><img src="https://dabuttonfactory.com/button.png?t=Open+Gitpod&f=Open+Sans-Bold&ts=16&tc=fff&hp=20&vp=10&c=11&bgt=unicolored&bgc=0b5394" /></a>
-<small><i>Right Click and select open as a new Tab...</i></small>
+
+
 
 #### ✅ S.4  Setup Astra CLI
 
