@@ -19,11 +19,12 @@ tasks:
       echo "Ready to thrive"
       export PYTHONPATH="/workspace/workshop-realtime-data-pipelines/:$PYTHONPATH"
       gp preview --external https://astra.dev/yt-9-14
+      astra setup
   - name: consumer
     command: |
-      echo "--------------------------------------------"
-      echo "-                 Consumer                 -"
-      echo "--------------------------------------------"
+      echo "***************"
+      echo "** Consumer ***"
+      echo "***************"
 ports:
   - port: 8080
     onOpen: open-browser

@@ -2,8 +2,8 @@ from pulsar import Function
 import json
 
 DST_TOPIC_MAP = {
-    'hotel':        'persistent://public/default/rr-hotel-reviews',
-    'restaurant':   'persistent://public/default/rr-restaurant-reviews',
+    'hotel':        'persistent://___TENANT___/default/rr-hotel-reviews',
+    'restaurant':   'persistent://___TENANT___/default/rr-restaurant-reviews',
 }
 
 class ReviewRouter(Function):

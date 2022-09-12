@@ -215,11 +215,8 @@ _**`ASTRA`** is the simplest way to run both Cassandra and Pulsat with zero oper
 
 Leveraging [Database creation guide](https://awesome-astra.github.io/docs/pages/astra/create-instance/#c-procedure) create a database. *Right-Click the button* with *Open in a new TAB.*
 
-The Astra registration page should have opened with Gitpod, if not use the button below.
+The Astra registration page should have opened with Gitpod, if not use [this link](https://astra.dev/yt-9-14).
 
-> ↗️ _Right Click and select open as a new Tab..._
-
-<a href="https://astra.dev/yt-9-14"><img src="https://dabuttonfactory.com/button.png?t=Sign+In+to+Astra&f=Open+Sans-Bold&ts=16&tc=fff&hp=20&vp=10&c=11&bgt=unicolored&bgc=0b5394" /></a>
 
 #### ✅ S.3 Create Astra Credentials (token)
 
@@ -231,11 +228,7 @@ Skip this step is you already have a token. You can reuse the same token in our 
 
 #### ✅ S.4 Setup Astra CLI
 
-To save your token in this environment use:
-
-```
-astra setup
-```
+Go back to your gitpod terminal waiting for your token.
 
 > 🖥️ Output
 >
@@ -343,10 +336,10 @@ astra db get workshops
 > | Status                 | ACTIVE                                  |
 > | Default Cloud Provider | AWS                                     |
 > | Default Region         | us-east-1                               |
-> | Default Keyspace       | trollsquad                         |
+> | Default Keyspace       | trollsquad                              |
 > | Creation Time          | 2022-08-29T06:13:06Z                    |
 > |                        |                                         |
-> | Keyspaces              | [0] trollsquad                         |
+> | Keyspaces              | [0] trollsquad                          |
 > |                        |                                         |
 > |                        |                                         |
 > | Regions                | [0] us-east-1                           |
@@ -479,6 +472,7 @@ exit
 - ✅ Show your topic `rr-raw-in` in Astra User Interface:
 
 ```
+ORGID=`astra org id`
 gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-raw-in/1/0/overview
 ```
 
@@ -504,6 +498,9 @@ tail -5 .env
 - Install dependencies
 
 ```
+set -a
+source .env
+set +a
 pip install -r requirements.txt
 ```
 
