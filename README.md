@@ -201,30 +201,7 @@ score given in the review.
 
 ## Setup - Initialize your environment
 
-#### ✅ S.1 Create Astra Account
-
-_**`ASTRA`** is the simplest way to run both Cassandra and Pulsat with zero operations at all - just push the button and get your clusters. No credit card required_
-
-Leveraging [Database creation guide](https://awesome-astra.github.io/docs/pages/astra/create-instance/#c-procedure) create a database. *Right-Click the button* with *Open in a new TAB.*
-
-> ↗️ _Right Click and select open as a new Tab..._
-
-<a href="https://astra.dev/yt-9-14"><img src="https://dabuttonfactory.com/button.png?t=Sign+In+to+Astra&f=Open+Sans-Bold&ts=16&tc=fff&hp=20&vp=10&c=11&bgt=unicolored&bgc=0b5394" /></a>
-
-Katapod
-```
-gp preview --external https://astra.dev/yt-9-14
-```
-
-#### ✅ S.2 Create Astra Credentials (token)
-
-Create an application token by following <a href="https://awesome-astra.github.io/docs/pages/astra/create-token/" target="_blank">these instructions</a>. 
-
-Skip this step is you already have a token. You can reuse the same token in our other workshops, too.
-
-> Your token should look like: `AstraCS:....`
-
-#### ✅ S.3 Start Gitpod IDE
+#### ✅ S.1 Start Gitpod IDE
 
 Gitpod is an IDE based on VSCode deployed in the cloud.
 
@@ -232,11 +209,33 @@ Gitpod is an IDE based on VSCode deployed in the cloud.
 
 <a href="https://gitpod.io/#https://github.com/datastaxdevs/workshop-realtime-data-pipelines"><img src="https://dabuttonfactory.com/button.png?t=Open+Gitpod&f=Open+Sans-Bold&ts=16&tc=fff&hp=20&vp=10&c=11&bgt=unicolored&bgc=0b5394" /></a>
 
+#### ✅ S.2 Create Astra Account
 
+_**`ASTRA`** is the simplest way to run both Cassandra and Pulsat with zero operations at all - just push the button and get your clusters. No credit card required_
 
-#### ✅ S.4  Setup Astra CLI
+Leveraging [Database creation guide](https://awesome-astra.github.io/docs/pages/astra/create-instance/#c-procedure) create a database. *Right-Click the button* with *Open in a new TAB.*
 
-When the IDE finish loading your are asked to provide your Astra Token
+The Astra registration page should have opened with Gitpod, if not use the button below.
+
+> ↗️ _Right Click and select open as a new Tab..._
+
+<a href="https://astra.dev/yt-9-14"><img src="https://dabuttonfactory.com/button.png?t=Sign+In+to+Astra&f=Open+Sans-Bold&ts=16&tc=fff&hp=20&vp=10&c=11&bgt=unicolored&bgc=0b5394" /></a>
+
+#### ✅ S.3 Create Astra Credentials (token)
+
+Create an application token by following <a href="https://awesome-astra.github.io/docs/pages/astra/create-token/" target="_blank">these instructions</a>. 
+
+Skip this step is you already have a token. You can reuse the same token in our other workshops, too.
+
+> Your token should look like: `AstraCS:....`
+
+#### ✅ S.4 Setup Astra CLI
+
+To save your token in this environment use:
+
+```
+astra setup
+```
 
 > 🖥️ Output
 >
@@ -315,7 +314,7 @@ Let's analyze the command:
 >[ INFO ] - Database 'workshops' has status 'ACTIVE' (took 7983 millis)
 > ```
 
-- Check the status of database `workshops`
+- ✅ Check the status of database `workshops`
 
 ```
 astra db status workshops
@@ -327,7 +326,7 @@ astra db status workshops
 > [ INFO ] - Database 'workshops' has status 'ACTIVE'
 > ```
 
-- Get the informations for your database including the keyspace list
+- ✅ Get the informations for your database including the keyspace list
 
 ```
 astra db get workshops
@@ -361,7 +360,7 @@ astra db get workshops
 
 > **Note**: Your tenant name must start with a lowercase alphabetic character. It can only contain lowercase alphanumeric characters, and hyphens (kebab-case), and the maximum length is 25.
 
-- Generate an unique tenant name
+- ✅ Generate an unique tenant name
 
 A tenant name should also BE UNIQUE IN ALL CLUSTER. So to get a unique name let's generate one randomly.
 
@@ -376,7 +375,7 @@ echo $TENANT
 > trollsquad-abcdefghi
 >```
 
-- Create the tenant using the generated name
+- ✅ Create the tenant using the generated name
 
 You can create a tenant from the user interface using [this tutorial](https://docs.datastax.com/en/astra-streaming/docs/astream-quick-start.html#create-a-tenant) but we will not use this today.
 
@@ -390,13 +389,13 @@ astra streaming create ${TENANT}
 [ INFO ] - Tenant 'trollsquad-abcdefghi' has being created.
 ```
 
-- List your tenants
+- ✅ List your tenants
 
 ```
 astra streaming list
 ```
 
-- Start `Pulsar-shell`
+- ✅ Start `Pulsar-shell`
 
 > **Note** Pulsar shell is a fast and flexible shell for Pulsar cluster management, messaging, and more. It's great for quickly switching between different clusters, and can modify cluster or tenant configurations in an instant.
 
@@ -423,10 +422,9 @@ astra streaming pulsar-shell ${TENANT}
 > default(pulsar-aws-useast2.streaming.datastax.com)> 
 > ```
 
-
 #### 1.2 Create topics
 
-- Show namespaces 
+- ✅ Show namespaces in `pulsar-shell`
 
 ```
 admin namespaces list ${TENANT}
@@ -438,36 +436,26 @@ admin namespaces list ${TENANT}
 > trollsquad-abcdefghijkl/default
 >```
 
-- Show topics (empty)
+- ✅ Show topics in `pulsar-shell` (empty)
 
 ```bash
 admin topics list ${TENANT}/default
 ```
 
-- Create topics
+- ✅ Create topics `rr-raw-in`, `rr-hotel-reviews` `rr-restaurant-reviews` `rr-restaurant-anomalies`.
 
-Create the four topics `rr-raw-in`, `rr-hotel-reviews`, `rr-restaurant-reviews`
-and `rr-restaurant-anomalies`.
+You can create topics through the user interface following this [official documentation](https://docs.datastax.com/en/astra-streaming/docs/astream-quick-start.html#create-a-topic) and [awesome-astra](https://awesome-astra.github.io/docs/pages/astra/create-topic/). 
 
-You can create topics through the user interface following this [official documentation](https://docs.datastax.com/en/astra-streaming/docs/astream-quick-start.html#create-a-topic) and [awesome-astra](https://awesome-astra.github.io/docs/pages/astra/create-topic/). But here we will keep leveraging on `pulsar-shell`.
+But here we will keep leveraging on `pulsar-shell`.
 
 ```
 admin topics create persistent://${TENANT}/default/rr-raw-in
-```
-
-```
 admin topics create persistent://${TENANT}/default/rr-hotel-reviews
-```
-
-```
 admin topics create persistent://${TENANT}/default/rr-restaurant-reviews
-```
-
-```
 admin topics create persistent://${TENANT}/default/rr-restaurant-anomalies
 ```
 
-- Show topics
+- ✅ Show topics
 
 ```
 admin topics list ${TENANT}/default
@@ -482,16 +470,16 @@ admin topics list ${TENANT}/default
 > persistent://trollsquad-pk6oztya8/default/rr-restaurant-reviews
 > ```
 
-- Exit
+- ✅ Exit
 
 ```
 exit
 ```
 
-- Show your topic `rr-raw-in` in Astra User Interface:
+- ✅ Show your topic `rr-raw-in` in Astra User Interface:
 
 ```
-gp preview --external https://astra.datastax.com/org/${ORG}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-raw-in/1/0/overview
+gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-raw-in/1/0/overview
 ```
 
 #### 1.3 Start injector (producer)
@@ -507,6 +495,9 @@ echo "ASTRA_DB_APP_TOKEN=\"${ASTRA_DB_APP_TOKEN}\"" >> .env
 echo "TENANT=\"${TENANT}\"" >> .env
 PULSAR_TOKEN=`astra streaming pulsar-token ${TENANT}`
 echo "PULSAR_TOKEN=\"${PULSAR_TOKEN}\"" >> .env
+ORGID=`astra org id`
+echo "ORGID=\"${ORGID}\"" >> .env
+
 tail -5 .env
 ```
 
@@ -525,7 +516,7 @@ pip install -r requirements.txt
 - Show producer on the UI
 
 ```
-gp preview --external https://astra.datastax.com/org/${ORG}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-raw-in/1/0/producers
+gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-raw-in/1/0/producers
 ```
 
 #### 1.4 Visualize messages (consumer)
@@ -550,7 +541,7 @@ client consume persistent://${TENANT}/default/rr-raw-in -s consume_log -n 0
 - Show Consumers in the Astra User Interface
 
 ```
-gp preview --external https://astra.datastax.com/org/${ORG}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-raw-in/1/0/consumers
+gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-raw-in/1/0/consumers
 ```
 
 ### LAB2 - Pulsar functions
@@ -564,36 +555,6 @@ cat ./pulsar_routing_function/review_router.py | grep ${TENANT}
 
 #### 2.2 Deploy function
 
-```bash
-admin functions list --tenant=${TENANT} --namespace=default
-```
-
-```bash
-admin functions create \
-  --py ./pulsar_routing_function/review_router.py \
-  --classname review_router.ReviewRouter \
-  --tenant ${TENANT} \
-  --namespace default \
-  --name rrouter-function \
-  --inputs rr-raw-in
-  ```
-
-```bash
-admin functions delete \
-  --tenant ${TENANT} \
-  --namespace default \
-  --name rrouter-function
-```
-
-#### 2.3 Run Demo
-
-In the Astra UI, click on your tenant and go to the "Functions" tab.
-Hit "Create Function".
-
-_IMPORTANT_: You must now manually edit the tenant name in all entries of the
-`DST_TOPIC_MAP` in the Python file before uploading:
-**it must reflect your unique tenant name**.
-
 When creating the function through the Astra Streaming UI:
 
 - Name = `rrouter-function`, namespace = `default`;
@@ -606,37 +567,54 @@ When creating the function through the Astra Streaming UI:
 The function will display as "Initializing" in the listing for some time
 (20 s perhaps), then "Running". You're all set now.
 
-**Function:**
+
+```bash
+admin functions list --tenant=${TENANT} --namespace=default
+```
+
+```bash
+admin functions create \
+  --py ./pulsar_routing_function/review_router.py \
+  --classname review_router.ReviewRouter \
+  --tenant ${TENANT} \
+  --namespace default \
+  --name rrouter-function \
+  --inputs rr-raw-in
+```
+
+```bash
+admin functions list --tenant=${TENANT} --namespace=default
+```
+
+```bash
+admin functions delete \
+  --tenant ${TENANT} \
+  --namespace default \
+  --name rrouter-function
+```
+
+- Show Restaurant Reviews
+
+#### 2.3 Run Analyzer
 
 https://docs.datastax.com/en/astra-streaming/docs/astream-astradb-sink.html
 
 
-
-
-## Running the demo
-
-Everything is now ready to run the demo.
-
-Open three shells next to each other: one will run the review generator,
-one will run the analyzer, and the third will consume and display entries
-from the "review anomalies" topic.
-
-> The third shell will run a simple utility able to subscribe to a generic
-> Pulsar topic and display the items found therein. You can use it to peek
 > into the other topics as well. But if you are using Astra Streaming you may
 > as well want to explore the "Try Me!" feature available directly in the Web UI,
 > which allows to read and write items by hand from/to Astra Streaming topics.
 
 Now start in rapid succession these three commands in the three shells and
 enjoy the show:
-```
-# first shell
-./revGenerator/review_generator.py -r 10
 
 # second shell
+```
 ./revAnalyzer/review_analyzer.py -r -o -t -f 200
+```
 
 # third shell
+
+```
 ./tools/reader.py -t rr-restaurant-anomalies
 ```
 
@@ -644,6 +622,7 @@ _Note_: you can customize the behaviour of those commands - try passing `-h`
 to the scripts to see what is available.
 
 ### Querying the database
+
 
 The only missing piece at this point are direct database queries. You can access
 the tables in any way you want, for instance using the

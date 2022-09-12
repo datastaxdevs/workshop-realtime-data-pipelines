@@ -18,7 +18,7 @@ tasks:
       clear
       echo "Ready to thrive"
       export PYTHONPATH="/workspace/workshop-realtime-data-pipelines/:$PYTHONPATH"
-      astra setup
+      gp preview --external https://astra.dev/yt-9-14
   - name: consumer
     command: |
       echo "--------------------------------------------"
