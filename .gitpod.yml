@@ -1,7 +1,5 @@
 tasks:
-  - name: init
-    env:
-        CQLENG_ALLOW_SCHEMA_MANAGEMENT: 1
+  - name: producer
     before: |
       printf 'export PATH="$HOME%s:$PATH"\n' "/.astra/cli" >> $HOME/.bashrc
       printf 'unset JAVA_TOOL_OPTIONS\n' >> $HOME/.bashrc
@@ -19,7 +17,13 @@ tasks:
       source /home/gitpod/.astra/cli/astra-init.sh
       clear
       echo "Ready to thrive"
+      export PYTHONPATH="/workspace/workshop-realtime-data-pipelines/:$PYTHONPATH"
       astra setup
+  - name: consumer
+    command: |
+      echo "--------------------------------------------"
+      echo "-                 Consumer                 -"
+      echo "--------------------------------------------"
 ports:
   - port: 8080
     onOpen: open-browser

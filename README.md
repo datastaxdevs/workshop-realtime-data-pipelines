@@ -488,6 +488,12 @@ admin topics list ${TENANT}/default
 exit
 ```
 
+- Show your topic `rr-raw-in` in Astra User Interface:
+
+```
+gp preview --external https://astra.datastax.com/org/${ORG}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-raw-in/1/0/overview
+```
+
 #### 1.3 Start injector (producer)
 
 - Create `.env` as configuration file
@@ -501,47 +507,8 @@ echo "ASTRA_DB_APP_TOKEN=\"${ASTRA_DB_APP_TOKEN}\"" >> .env
 echo "TENANT=\"${TENANT}\"" >> .env
 PULSAR_TOKEN=`astra streaming pulsar-token ${TENANT}`
 echo "PULSAR_TOKEN=\"${PULSAR_TOKEN}\"" >> .env
+tail -5 .env
 ```
-
-- Show `.env` file, it will be loaded from python
-
-```bash
-cat .env
-```
-
-> 🖥️ Output
->
-> ```
-> ######################
-> # Astra Streaming
-> ######################
-> 
-> # Default region with the CLI
-> BROKER_URL="pulsar+ssl://pulsar-aws-useast2.streaming.datastax.com:6651"
-> 
-> # Keep default namespace
-> NAMESPACE="default"
-> 
-> # Topics
-> RAW_TOPIC="rr-raw-in"
-> RESTAURANT_TOPIC="rr-restaurant-reviews"
-> ANOMALIES_TOPIC="rr-restaurant-anomalies"
-> 
-> ################
-> # Astra DB 
-> ################
->
-> # Default region with the CLI
-> ASTRA_DB_REGION="us-east-1"
->
-> # Default keyspace name is trollsquad
-> ASTRA_DB_KEYSPACE="trollsquad"
->
-> ASTRA_DB_ID="..."
-> ASTRA_DB_APP_TOKEN="..."
-> TENANT="..."
-> PULSAR_TOKEN="..."
->```
 
 - Install dependencies
 
@@ -555,10 +522,35 @@ pip install -r requirements.txt
 ./revGenerator/review_generator.py -r 10
 ```
 
-#### 1.4 Visualize messages (consumer)
+- Show producer on the UI
 
 ```
-client consume persistent://${TENANT}/default/rr-raw-in -s consume_log
+gp preview --external https://astra.datastax.com/org/${ORG}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-raw-in/1/0/producers
+```
+
+#### 1.4 Visualize messages (consumer)
+
+Locate terminal `consumer` or open a new one with shorcut `CONTROL^ + SHIFT + ``.
+
+- Load environment variables and start pulsar shell
+
+```
+set -a
+source .env
+set +a
+astra streaming ${TENANT} pulsar-shell
+```
+
+- Launch a consumer in the console
+
+```
+client consume persistent://${TENANT}/default/rr-raw-in -s consume_log -n 0
+```
+
+- Show Consumers in the Astra User Interface
+
+```
+gp preview --external https://astra.datastax.com/org/${ORG}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-raw-in/1/0/consumers
 ```
 
 ### LAB2 - Pulsar functions
@@ -566,14 +558,14 @@ client consume persistent://${TENANT}/default/rr-raw-in -s consume_log
 #### 2.1 Create function
 
 ```
-sed ___TENANT___ ${TENANT} ./pulsar_routing_function/review_router.py
-cat ./pulsar_routing_function/review_router.py
+sed 's/___TENANT___/${TENANT}/' ./pulsar_routing_function/review_router.py
+cat ./pulsar_routing_function/review_router.py | grep ${TENANT}
 ```
 
 #### 2.2 Deploy function
 
 ```bash
-admin functions list --tenant=trollsquad-2022 --namespace=default
+admin functions list --tenant=${TENANT} --namespace=default
 ```
 
 ```bash

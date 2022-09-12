@@ -10,8 +10,8 @@ from dotenv import load_dotenv
 from pulsarTools.tools import getPulsarClient
 from revGenerator.fake_reviews import createReview, initRandom
 
+# Load file .env
 load_dotenv()
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -26,7 +26,6 @@ if __name__ == '__main__':
 
     # init connection
     client = getPulsarClient()
-    #
     TENANT = os.environ['TENANT']
     NAMESPACE = os.environ['NAMESPACE']
     RAW_TOPIC = os.environ['RAW_TOPIC']
