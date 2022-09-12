@@ -207,9 +207,14 @@ _**`ASTRA`** is the simplest way to run both Cassandra and Pulsat with zero oper
 
 Leveraging [Database creation guide](https://awesome-astra.github.io/docs/pages/astra/create-instance/#c-procedure) create a database. *Right-Click the button* with *Open in a new TAB.*
 
+> ↗️ _Right Click and select open as a new Tab..._
 
 <a href="https://astra.dev/yt-9-14"><img src="https://dabuttonfactory.com/button.png?t=Sign+In+to+Astra&f=Open+Sans-Bold&ts=16&tc=fff&hp=20&vp=10&c=11&bgt=unicolored&bgc=0b5394" /></a>
-<small><i>Right Click and select open as a new Tab...</i></small>
+
+Katapod
+```
+gp preview --external https://astra.dev/yt-9-14
+```
 
 #### ✅ S.2 Create Astra Credentials (token)
 
@@ -300,9 +305,15 @@ Let's analyze the command:
 | `--if-not-exist` | Flag for itempotency creating only what if needed |
 | `--wait` | Make the command blocking until all expected operations are executed (timeout is 180s) |
 
-
 > **Note**: If the database already exist but has not been used for while the status will be `HIBERNATED`. The previous command will resume the db an create the new keyspace but it can take about a minute to execute.
 
+> 🖥️ Output
+>
+> ```
+> [ INFO ] - Database 'workshops' already exist. Connecting to database.
+> [ INFO ] - Database 'workshops' has status 'MAINTENANCE' waiting to be 'ACTIVE' ...
+>[ INFO ] - Database 'workshops' has status 'ACTIVE' (took 7983 millis)
+> ```
 
 - Check the status of database `workshops`
 
@@ -355,14 +366,14 @@ astra db get workshops
 A tenant name should also BE UNIQUE IN ALL CLUSTER. So to get a unique name let's generate one randomly.
 
 ```
-export TENANT="trollsquad-$(openssl rand -base64 12)"
+export TENANT="trollsquad-$(tr -dc a-z0-9 </dev/urandom | head -c 9 ; echo '')"
 echo $TENANT
 ```
 
 > 🖥️ Output (*faked, I am not that lucky*)
 >
 > ```
-> trollsquad-abcdefghijkl
+> trollsquad-abcdefghi
 >```
 
 - Create the tenant using the generated name
@@ -372,23 +383,18 @@ You can create a tenant from the user interface using [this tutorial](https://do
 We will use the CLI for everyone to share the same values for regions and cloud provider. We will default all values for simplicity and because they are harcoded in the configuration file.
 
 ```
-astra streaming create ${TENANT} --if-not-exist
+astra streaming create ${TENANT}
 ```
 
-Let's analyze the command:
-| Variable         | Value     |
-|--------------|-----------|
-| astra streaming create | `streaming` is option group relative to Astra Streaming. `create` is to create a tenant for you   |
-| ${TENANT} | Your tenant name  |
-| `namespace` | `default` |
-| `--if-not-exist` | Flag for itempotency creating only what if needed |
+```
+[ INFO ] - Tenant 'trollsquad-abcdefghi' has being created.
+```
 
 - List your tenants
 
 ```
 astra streaming list
 ```
-
 
 - Start `Pulsar-shell`
 
@@ -400,12 +406,30 @@ Astra CLI will download and install the software if needed. Then it will generat
 astra streaming pulsar-shell ${TENANT}
 ```
 
+> 🖥️ Output
+> ```
+> [ INFO ] - pulsar-shell first launch, downloading (~ 60MB), please wait...
+> [ INFO ] - pulsar-shell has been installed
+> /home/gitpod/.astra/lunastreaming-shell-2.10.1.1/conf/client-aws-useast2-trollsquad-pk6oztya8.conf
+> Pulsar-shell is starting please wait for connection establishment...
+> Using directory: /home/gitpod/.pulsar-shell
+> Welcome to Pulsar shell!
+>   Service URL: pulsar+ssl://pulsar-aws-useast2.streaming.datastax.com:6651
+>   Admin URL: https://pulsar-aws-useast2.api.streaming.datastax.com
+> 
+> Type help to get started or try the autocompletion (TAB button).
+> Type exit or quit to end the shell session.
+> 
+> default(pulsar-aws-useast2.streaming.datastax.com)> 
+> ```
+
+
 #### 1.2 Create topics
 
 - Show namespaces 
 
 ```
-admin namespaces list  ${TENANT}
+admin namespaces list ${TENANT}
 ```
 
 > 🖥️ Output
@@ -427,10 +451,19 @@ and `rr-restaurant-anomalies`.
 
 You can create topics through the user interface following this [official documentation](https://docs.datastax.com/en/astra-streaming/docs/astream-quick-start.html#create-a-topic) and [awesome-astra](https://awesome-astra.github.io/docs/pages/astra/create-topic/). But here we will keep leveraging on `pulsar-shell`.
 
-```bash
+```
 admin topics create persistent://${TENANT}/default/rr-raw-in
+```
+
+```
 admin topics create persistent://${TENANT}/default/rr-hotel-reviews
+```
+
+```
 admin topics create persistent://${TENANT}/default/rr-restaurant-reviews
+```
+
+```
 admin topics create persistent://${TENANT}/default/rr-restaurant-anomalies
 ```
 
@@ -440,6 +473,21 @@ admin topics create persistent://${TENANT}/default/rr-restaurant-anomalies
 admin topics list ${TENANT}/default
 ```
 
+> 🖥️ Output
+>
+> ```
+> persistent://trollsquad-pk6oztya8/default/rr-raw-in
+> persistent://trollsquad-pk6oztya8/default/rr-restaurant-anomalies
+> persistent://trollsquad-pk6oztya8/default/rr-hotel-reviews
+> persistent://trollsquad-pk6oztya8/default/rr-restaurant-reviews
+> ```
+
+- Exit
+
+```
+exit
+```
+
 #### 1.3 Start injector (producer)
 
 - Create `.env` as configuration file
@@ -447,15 +495,12 @@ admin topics list ${TENANT}/default
 ```
 cp .env.sample .env
 ASTRA_DB_ID=`astra db get workshops --key id`
-echo "export ASTRA_DB_ID=${ASTRA_DB_ID}" >> .env
-
+echo "ASTRA_DB_ID=\"${ASTRA_DB_ID}\"" >> .env
 ASTRA_DB_APP_TOKEN=`astra config get default --key ASTRA_DB_APPLICATION_TOKEN`
-echo "export ASTRA_DB_APP_TOKEN=${ASTRA_DB_APP_TOKEN}" >> .env
-
-echo "export TENANT=${TENANT}" >> .env
-
-PULSAR_TOKEN=`astra streaming get ${TENANT} --key pulsar-token`
-echo "export PULSAR_TOKEN=${PULSAR_TOKEN}" >> .env
+echo "ASTRA_DB_APP_TOKEN=\"${ASTRA_DB_APP_TOKEN}\"" >> .env
+echo "TENANT=\"${TENANT}\"" >> .env
+PULSAR_TOKEN=`astra streaming pulsar-token ${TENANT}`
+echo "PULSAR_TOKEN=\"${PULSAR_TOKEN}\"" >> .env
 ```
 
 - Show `.env` file, it will be loaded from python
