@@ -1,5 +1,7 @@
 ## 🎓 Real-Time data pipelines with Apache Pulsar™ and Apache Cassandra™
 
+<img src="images/badge.png?raw=true" width="150" align="right" />
+
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/datastaxdevs/workshop-realtime-data-pipelines)
 [![License Apache2](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Discord](https://img.shields.io/discord/685554030159593522)](https://discord.com/widget?id=685554030159593522&theme=dark)
@@ -365,24 +367,24 @@ You can create a tenant from the user interface using [this tutorial](https://do
 
 We will use the CLI for everyone to share the same values for regions and cloud provider. We will default all values for simplicity and because they are harcoded in the configuration file.
 
+```
+astra streaming create ${TENANT} --if-not-exist
+```
+
 Let's analyze the command:
 | Variable         | Value     |
 |--------------|-----------|
-| `tenant name` | Your tenant name $TENANT  |
+| astra streaming create | `streaming` is option group relative to Astra Streaming. `create` is to create a tenant for you   |
+| ${TENANT} | Your tenant name  |
 | `namespace` | `default` |
-|`-k trollsquad` | Name of the keyspace, a db can contains multiple keyspaces |
 | `--if-not-exist` | Flag for itempotency creating only what if needed |
-| `--wait` | Make the command blocking until all expected operations are executed (timeout is 180s) |
-
-```
-astra streaming create ${TENANT}
-```
 
 - List your tenants
 
 ```
 astra streaming list
 ```
+
 
 - Start `Pulsar-shell`
 
@@ -564,6 +566,8 @@ The function will display as "Initializing" in the listing for some time
 (20 s perhaps), then "Running". You're all set now.
 
 **Function:**
+
+https://docs.datastax.com/en/astra-streaming/docs/astream-astradb-sink.html
 
 
 
