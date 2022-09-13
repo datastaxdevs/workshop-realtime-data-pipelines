@@ -661,7 +661,6 @@ admin functions create \
 > Created successfully
 > ```
 
-
 #### `✅.lab2-05`- List functions in `pulsar-shell`
 
 ```bash
@@ -674,7 +673,6 @@ exit
 > rrouter-function
 > ```
 
-
 #### `✅.lab2-06`- Check on topics `rr-hotel-reviews` and `rr-restaurant-reviews`
 
 ```bash
@@ -685,43 +683,176 @@ gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-a
 gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-restaurant-reviews/1/0
 ```
 
-- Check content with consumer
+> 🖥️ `lab2-06 output`
+> 
+> Hotels: 
+> ![](images/pic-hotel-reviews.png)
+>
+> Restaurants: 
+> ![](images/pic-restaurant-reviews.png)
+
+
+#### `✅.lab2-07`- Consume 5 message in topics content with `pulsar-shell`
+
+- Start Shell:
 
 ```
-client consume persistent://${TENANT}/default/rr-restaurant-reviews -s consume_log -n 0
+astra streaming pulsar-shell ${TENANT}
 ```
 
-#### 2.3 Run Analyzer
-
-- Start Analyzer in shell `analyzer`
+- Execute command:
 
 ```
+client consume persistent://${TENANT}/default/rr-restaurant-reviews -s consume_log -n 5
+```
+
+> 🖥️ `lab2-07 sample message`
+> 
+> ```json
+> { 
+>   "user_id": "geri", 
+>    "r_score": 1.5, 
+>    "tgt_name": "Pizza Smile", 
+>    "tgt_id": "pizzas", 
+>    "r_text": "delicious with for eating stellar excellent is", 
+>    "idx": 20179
+>  }
+> ```
+
+#### `✅.lab2-08`- Run Analyzer
+
+revAnalyzer is a standalone batch to evaluate which reviews are relevant and which are not.
+
+```bash
+set -a
+source .env
+set +a
 /workspace/workshop-realtime-data-pipelines/revAnalyzer/review_analyzer.py -r -o -t -f 200
 ```
 
-- Start reader to log anomalies in shell `reader`
+> 🖥️ `lab2-08 output`
+> 
+> ```
+> Checking "known_ids_per_type" ... done.
+> Checking "restaurants_by_id" ... done.
+> Checking "restaurants_by_id_time" ... done.
+> Checking "reviewers_by_id" ... done.
+> 2022-09-13 12:46:30.012 INFO  [140019973255808] Client:88 | Subscribing on Topic :persistent://trollsquad-pk6oztya8/default/rr-restaurant-reviews
+> 2022-09-13 12:46:30.012 INFO  [140019973255808] ClientConnection:189 | [<none> -> pulsar+ssl://pulsar-aws-useast2.streaming.datastax.com:6651] Create ClientConnection, timeout=10000
+> 2022-09-13 12:46:30.019 INFO  [140019973255808] ConnectionPool:96 | Created connection for pulsar+ssl://pulsar-aws-useast2.streaming.datastax.com:6651
+> 2022-09-13 12:46:30.121 INFO  [140019938682624] ClientConnection:375 | [10.0.5.2:33432 -> 18.223.216.1:6651] Connected to broker
+> 2022-09-13 12:46:30.593 INFO  [140019938682624] HandlerBase:64 | [persistent://trollsquad-pk6oztya8/default/rr-restaurant-reviews, review-analyzer, 0] Getting connection from pool
+> 2022-09-13 12:46:30.688 INFO  [140019938682624] ClientConnection:189 | [<none> -> pulsar+ssl://pulsar-aws-useast2.streaming.datastax.com:6651] Create ClientConnection, timeout=10000
+> 2022-09-13 12:46:30.696 INFO  [140019938682624] ConnectionPool:96 | Created connection for pulsar://192.168.50.226:6650
+> 2022-09-13 12:46:30.798 INFO  [140019938682624] ClientConnection:377 | [10.0.5.2:49968 -> 3.138.177.230:6651] Connected to broker through proxy. Logical broker: pulsar://192.168.50.226:6650
+> 2022-09-13 12:46:31.263 INFO  [140019938682624] ConsumerImpl:224 | [persistent://trollsquad-pk6oztya8/default/rr-restaurant-reviews, review-analyzer, 0] Created consumer on broker [10.0.5.2:49968 -> 3.138.177.230:6651] 
+> 2022-09-13 12:46:31.358 INFO  [140019938682624] HandlerBase:64 | [persistent://trollsquad-pk6oztya8/default/rr-restaurant-anomalies, ] Getting connection from pool
+> 2022-09-13 12:46:31.453 INFO  [140019938682624] ClientConnection:189 | [<none> -> pulsar+ssl://pulsar-aws-useast2.streaming.datastax.com:6651] Create ClientConnection, timeout=10000
+> 2022-09-13 12:46:31.460 INFO  [140019938682624] ConnectionPool:96 | Created connection for pulsar://192.168.7.141:6650
+> 2022-09-13 12:46:31.558 INFO  [140019938682624] ClientConnection:377 | [10.0.5.2:41468 -> 3.16.119.226:6651] Connected to broker through proxy. Logical broker: pulsar://192.168.7.141:6650
+> 2022-09-13 12:46:32.032 INFO  [140019938682624] ProducerImpl:189 | [persistent://trollsquad-pk6oztya8/default/rr-restaurant-anomalies, ] Created producer on broker [10.0.5.2:41468 -> 3.16.119.226:6651] 
+> [ 20827] Outlier detected: "anne" on "Golden Fork" (rev 7.40 != avg 3.47)
+> [ 24252] Outlier detected: "anne" on "Golden Fork" (rev 7.90 != avg 4.63)
+> [ 24256] Outlier detected: "botz" on "Golden Fork" (rev 0.40 != avg 4.21)
+> [ 24616] Outlier detected: "botz" on "Golden Fork" (rev 0.60 != avg 3.97)
+> [ 25239] Restaurant Score Summary:
+>                  [gold_f  25239]   "Golden Fork"      : 3.66   (outliers:      4/    64)
+>                  [pizzas  25239]   "Pizza Smile"      : 0.67   (outliers:      0/    55)
+>                  [vegg00  25239]   "VeggieParadise"   : 1.93   (outliers:      0/    57)
+[ 25239] Reviewer Summary:
+>                    "anne"  25239 : troll-score = 0.00 (outliers:      2 /     42). Visits: gold_f(18), pizzas(12), vegg00(12)
+>                    "botz"  25239 : troll-score = 0.00 (outliers:      2 /     43). Visits: gold_f(13), pizzas(14), vegg00(16)
+>                    "geri"  25239 : troll-score = 0.66 (outliers:      0 /     41). Visits: gold_f(12), vegg00(2)
+>                    "john"  25239 : troll-score = 0.00 (outliers:      0 /     35). Visits: gold_f(13), pizzas(10), vegg00(12)
+>                    "rita"  25239 : troll-score = 0.00 (outliers:      0 /     39). Visits: gold_f(7), pizzas(18), vegg00(14)
+> [ 25239] Writing to DB ... done.
+> ```
 
-```
+#### `✅.lab2-09`- Change Terminal
+
+All terminal are busy. Let us move to the terminal called `4_reader`
+
+![](images/pic-bash4.png)
+
+#### `✅.lab2-010`- Start reader to log anomalies in shell `reader`
+
+```bash
+set -a
+source .env
+set +a
 /workspace/workshop-realtime-data-pipelines/tools/reader.py -t rr-restaurant-anomalies
 ```
 
-_Note_: you can customize the behaviour of those commands - try passing `-h`
-to the scripts to see what is available.
+> 🖥️ `lab2-10 output`
+> 
+> ```
+> 2022-09-13 12:52:16.261 INFO  [139762389439104] Client:88 | Subscribing on Topic :persistent://trollsquad-pk6oztya8/default/rr-restaurant-anomalies
+> 2022-09-13 12:52:16.262 INFO  [139762389439104] ClientConnection:189 | [<none> -> pulsar+ssl://pulsar-aws-useast2.streaming.datastax.com:6651] Create ClientConnection, timeout=10000
+> 2022-09-13 12:52:16.267 INFO  [139762389439104] ConnectionPool:96 | Created connection for pulsar+ssl://pulsar-aws-useast2.streaming.datastax.com:6651
+> 2022-09-13 12:52:16.380 INFO  [139762369062656] ClientConnection:375 | [10.0.5.2:40472 -> 3.16.119.226:6651] Connected to broker
+> 2022-09-13 12:52:16.852 INFO  [139762369062656] HandlerBase:64 | [persistent://trollsquad-pk6oztya8/default/rr-restaurant-anomalies, my-sub, 0] Getting connection from pool
+> 2022-09-13 12:52:16.945 INFO  [139762369062656] ClientConnection:189 | [<none> -> pulsar+ssl://pulsar-aws-useast2.streaming.datastax.com:6651] Create ClientConnection, timeout=10000
+> 2022-09-13 12:52:16.951 INFO  [139762369062656] ConnectionPool:96 | Created connection for pulsar://192.168.7.141:6650
+> ...
+> [2022-09-13T12:52:40] Received message 217:
+>     Type = JSON
+>         {
+>             "detected_by": "review_analyzer.py",
+>             "idx": 22650,
+>             "r_score": 9.4,
+>             "r_text": "roast superb roast ordinary superb superb stellar we",
+>             "tgt_id": "gold_f",
+>             "tgt_name": "Golden Fork",
+>             "user_id": "botz"
+>         }
+> ...
+> ```
+
+> **Note**: *you can customize the behaviour of those commands - try passing `-h`to the scripts to see what is available*.
 
 ## LAB3 - Working with databases
 
-The only missing piece at this point are direct database queries. You can access
-the tables in any way you want, for instance using the
-provided [CQL shell on the Astra DB UI](https://github.com/datastaxdevs/awesome-astra/wiki/Cql-Shell):
-just inspect the `trollsquad` keyspace and try to `SELECT` rows from the tables you find there.
+All terminal are busy. Let us move to the terminal called `4_reader`
 
-> You will notice that the restaurant reviews are written in _two_ tables: one will simply
-> contain the latest average score for each restaurant, the other is structured to offer
-> historical data for e.g. a plotting client application (there is some built-in eviction
-> of old results to avoid unbound growth of the table).
+![](images/pic-bash5.png)
 
-_Note:_ you just have to create the keyspace, since every time the analyzer starts
-it checks for the tables and, if they do not exist, it creates them for you.
+The only missing piece at this point are direct database queries. You can access the tables in any way you want, for instance using the provided [CQL shell on the Astra DB UI](https://github.com/datastaxdevs/awesome-astra/wiki/Cql-Shell): just inspect the `trollsquad` keyspace and try to `SELECT` rows from the tables you find there.
+
+#### `✅.lab3-01`- Display schema
+
+You will notice that the restaurant reviews are written in _two_ tables: 
+
+- one will simply contains the latest average score for each restaurant
+
+```bash
+set -a
+source .env
+set +a
+source /home/gitpod/.astra/cli/astra-init.sh
+astra db cqlsh workshops -e "describe table trollsquad.restaurants_by_id;"
+```
+
+> 🖥️ `lab3-01 output`
+```
+[ INFO ] - Cqlsh has been installed
+
+Cqlsh is starting please wait for connection establishment...
+
+CREATE TABLE trollsquad.restaurants_by_id (
+    id text PRIMARY KEY,
+    average float,
+    hits int,
+    name text,
+    num_outliers int
+)
+```
+
+> **Note**:*Sometimes you can hit a timeout error, it that is the case reexcute the same command.*
+
+- the other is structured to offer historical data for e.g. a plotting client application (there is some built-in eviction of old results to avoid unbound growth of the table).
+
+
+
 
 - ✅ What restaurants can be queried?
 
