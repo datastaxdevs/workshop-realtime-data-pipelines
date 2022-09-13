@@ -832,67 +832,85 @@ source /home/gitpod/.astra/cli/astra-init.sh
 astra db cqlsh workshops -e "describe table trollsquad.restaurants_by_id;"
 ```
 
-> 🖥️ `lab3-01 output`
-```
-[ INFO ] - Cqlsh has been installed
-
-Cqlsh is starting please wait for connection establishment...
-
-CREATE TABLE trollsquad.restaurants_by_id (
-    id text PRIMARY KEY,
-    average float,
-    hits int,
-    name text,
-    num_outliers int
-)
-```
+> 🖥️ `lab3-01 output (1)`
+> ```sql
+> [ INFO ] - Cqlsh has been installed
+> 
+> Cqlsh is starting please wait for connection establishment...
+> 
+> CREATE TABLE trollsquad.restaurants_by_id (
+>     id text PRIMARY KEY,
+>     average float,
+>     hits int,
+>     name text,
+>     num_outliers int
+> )
+> ```
 
 > **Note**:*Sometimes you can hit a timeout error, it that is the case reexcute the same command.*
 
 - the other is structured to offer historical data for e.g. a plotting client application (there is some built-in eviction of old results to avoid unbound growth of the table).
 
-
-
-
-- ✅ What restaurants can be queried?
-
+```bash
+source /home/gitpod/.astra/cli/astra-init.sh
+astra db cqlsh workshops -e "describe table trollsquad.restaurants_by_id_time;"
 ```
+
+> 🖥️ `lab3-01 output (2)`
+> ```sql
+> CREATE TABLE trollsquad.restaurants_by_id_time (
+>     id text,
+>     time timestamp,
+>     average float,
+>     name text,
+>     PRIMARY KEY (id, time)
+> ) WITH CLUSTERING ORDER BY (time ASC)
+> ```
+
+
+#### `✅.lab3-02`- What restaurants can be queried?
+
+```bash
 astra db cqlsh workshops \
    -e "select * from trollsquad.known_ids_per_type where id_type='restaurant'"
 ```
 
-- ✅ What reviewers can be queried?
+> 🖥️ `lab3-01 output (2)`
+> ```sql
+>  id_type    | ids
+> ------------+--------------------------------
+>  restaurant | {'gold_f', 'pizzas', 'vegg00'}
+> ```
 
-```
+#### `✅.lab3-03`- What reviewers can be queried?
+
+```bash
 astra db cqlsh workshops \
    -e "select * from trollsquad.known_ids_per_type where id_type='reviewer'"
 ```
 
-- ✅ What's the current status of a restaurant?
+#### `✅.lab3-04`- What's the current status of a restaurant?
 
-```
+```bash
 astra db cqlsh workshops \
    -e "select * from trollsquad.restaurants_by_id where id='vegg00'"
 ```
 
-- ✅ What's the current status of a reviewer?
+#### `✅.lab3-05`- What's the current status of a reviewer?
 
-```
+```bash
 astra db cqlsh workshops \
    -e "select * from trollsquad.reviewers_by_id where id='geri'"
 ```
 
-- ✅ What is the timeline of reviews for a restaurant?
+#### `✅.lab3-06`- What is the timeline of reviews for a restaurant?
 
-```
+```bash
 astra db cqlsh workshops \
    -e "select * from trollsquad.restaurants_by_id_time where id='gold_f'"
 ```
 
-```
-
-Cqlsh is starting please wait for connection establishment...
-
+```sql
  id     | time                            | average | name
 --------+---------------------------------+---------+-------------
  gold_f | 2022-09-13 00:48:51.481000+0000 | 5.14027 | Golden Fork
