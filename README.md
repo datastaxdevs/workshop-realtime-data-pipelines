@@ -26,13 +26,12 @@ Welcome to the *RealTime data pipeline with Apache Pulsar and Apache Cassandra**
   - [Architecture overview](#architecture-overview)
   - [Injector Component](#injector-component)
   - [Analyzer Component](#analyzer-component)
-- [**Setup - Initialize your environment**](#setup---initialize-your-environment)
+- [Setup - Initialize your environment](#setup---initialize-your-environment)
 - [LAB1 - Producer and Consumer](#lab1---producer-and-consumer)
 - [LAB2 - Pulsar functions](#lab2---pulsar-functions)
-- [LAB3 - Working with Database](#)
-- [LAB4 - Pulsar I/O](#)
-- [Homework](#7-homework)
-- [What's NEXT ](#8-whats-next-)
+- [LAB3 - Working with Database](#lab3---working-with-databases)
+- [LAB4 - Pulsar I/O](#lab4---pulsar-io)
+- [Homework](#Homework)
 <p>
 
 ## Objectives
@@ -102,7 +101,7 @@ we have you covered. In this repository, you'll find everything you need for thi
 
 _Reviews of various venues (hotels/restaurants), written by various users, keep pouring in. We need a way to clean, normalize and filter them, removing trolls and flagging blatant outlier reviews, and make the running results available to the end user._
 
-### Architecture overview
+#### Architecture overview
 
 <img src="./images/current_arch.png"/>
 
@@ -123,9 +122,9 @@ _Reviews of various venues (hotels/restaurants), written by various users, keep 
 </p>
 </details>
 
-### Injector Component
+#### Injector Component
 
-<img src="./images/plots/02_reviews.png"/>
+<img src="./images/plots/02_reviews.png"  width="600px" />
 
 <details>
 <summary><b> Show Details</b></summary>
@@ -142,13 +141,13 @@ score and text are also created according to the following rules:
 
 Each venue has a "true" quality that is slowly oscillating in time, see for example these two restaurants:
 
-<img src="./images/plots/01_real-values.png"/>
+<img src="./images/plots/01_real-values.png"  width="600px" />
 
 Each reviewer has an associate amplitude that dictates how widely the scores they produce
 may fluctuate away from the "true" value for that venue at that "time": in this example, the individual
 scores emitted by two different reviewers, having a large and small associated amplitude, are plotted:
 
-<img src="./images/plots/02_reviews.png"/>
+<img src="./images/plots/02_reviews.png"  width="600px" />
 
 While reviews by Rita will presumably all fall in the "expected" region around the current average,
 a large fraction of the reviews by Anne will be too far away from
@@ -161,9 +160,9 @@ disagreement with the numeric score in the review.
 </p>
 </details>
 
-### Analyzer Component
+#### Analyzer Component
 
-<img src="./images/plots/03_moving-average.png"/>
+<img src="./images/plots/03_moving-average.png" width="600px"/>
 
 <details>
 <summary><b> Show Details</b></summary>
@@ -172,7 +171,7 @@ On the **analyzer side**, the reconstructed rolling average roughly follows the 
 a venue, and is used to detect "outliers": each review that differs too much from the current rolling
 average is deemed an outlier. Here the rolling average corresponding to the above restaurant is plotted:
 
-<img src="./images/plots/03_moving-average.png"/>
+<img src="./images/plots/03_moving-average.png"  width="600px"/>
 
 The analyzer also discards troll reviews and keeps a running 
 counter of them, both per-user and per-restaurant, ready to be exposed with the other data. To do so, a toy version of a sentiment analysis is implemented (simply based on some words with positive
@@ -217,7 +216,7 @@ Go back to your gitpod terminal waiting for your token. Provide the value where 
 
 ![pic](images/pic-astratoken.png)
 
-> 🖥️ Output
+> 🖥️ `setup-04 output`
 >
 > ```
 > [cedrick.lunven@gmail.com]
@@ -238,7 +237,7 @@ Go back to your gitpod terminal waiting for your token. Provide the value where 
 astra user list
 ```
 
-> 🖥️ Output
+> 🖥️ `setup-05 output`
 >
 > ```
 > +--------------------------------------+-----------------------------+---------------------+
@@ -265,7 +264,7 @@ Let's analyze the command:
 
 > **Note**: If the database already exist but has not been used for while the status will be `HIBERNATED`. The previous command will resume the db an create the new keyspace but it can take about a minute to execute.
 
-> 🖥️ Output
+> 🖥️ `setup-06 output`
 >
 > ```
 > [ INFO ] - Database 'workshops' already exist. Connecting to database.
@@ -279,7 +278,7 @@ Let's analyze the command:
 astra db status workshops
 ```
 
-> 🖥️ Output
+> 🖥️ `setup-07 output`
 >
 > ```
 > [ INFO ] - Database 'workshops' has status 'ACTIVE'
@@ -291,7 +290,7 @@ astra db status workshops
 astra db get workshops
 ```
 
-> 🖥️ Output
+> 🖥️ `setup-08 output`
 >
 > ```
 > +------------------------+-----------------------------------------+
@@ -326,43 +325,56 @@ export TENANT="trollsquad-$(tr -dc a-z0-9 </dev/urandom | head -c 9 ; echo '')"
 echo $TENANT
 ```
 
-> 🖥️ Output (*faked, I am not that lucky*)
+> 🖥️ `lab1-01 output`
 >
 > ```
 > trollsquad-abcdefghi
 >```
 
-- ✅ Create the tenant using the generated name
+#### `✅.lab1-02`- Create the tenant using the generated name
 
 You can create a tenant from the user interface using [this tutorial](https://docs.datastax.com/en/astra-streaming/docs/astream-quick-start.html#create-a-tenant) but we will not use this today.
 
 We will use the CLI for everyone to share the same values for regions and cloud provider. We will default all values for simplicity and because they are harcoded in the configuration file.
 
-```
+```bash
 astra streaming create ${TENANT}
 ```
 
-```
-[ INFO ] - Tenant 'trollsquad-abcdefghi' has being created.
-```
+> 🖥️ `lab1-02 output`
+>
+> ```
+> [ INFO ] - Tenant 'trollsquad-abcdefghi' has being created.
+>```
 
-- ✅ List your tenants
 
-```
+#### `✅.lab1-03`- List your tenants
+
+```bash
 astra streaming list
 ```
 
-- ✅ Start `Pulsar-shell`
+> 🖥️ `lab1-03 output`
+>
+>```
+> +---------------------+-----------+----------------+----------------+
+> | name                | cloud     | region         | Status         |
+> +---------------------+-----------+----------------+----------------+
+> | trollsquad-abcdefghi| aws       | useast2        | active         |
+> +---------------------+-----------+----------------+----------------+
+
+
+#### `✅.lab1-04`- Start `Pulsar-shell`
 
 > **Note** Pulsar shell is a fast and flexible shell for Pulsar cluster management, messaging, and more. It's great for quickly switching between different clusters, and can modify cluster or tenant configurations in an instant.
 
 Astra CLI will download and install the software if needed. Then it will generate a `client.conf` based on the tenant name you provide.
 
-```
+```bash
 astra streaming pulsar-shell ${TENANT}
 ```
 
-> 🖥️ Output
+> 🖥️ `lab1-04 output`
 > ```
 > [ INFO ] - pulsar-shell first launch, downloading (~ 60MB), please wait...
 > [ INFO ] - pulsar-shell has been installed
@@ -379,47 +391,45 @@ astra streaming pulsar-shell ${TENANT}
 > default(pulsar-aws-useast2.streaming.datastax.com)> 
 > ```
 
-#### 1.2 Create topics
+#### `✅.lab1-05`- Show namespaces in `pulsar-shell`
 
-- ✅ Show namespaces in `pulsar-shell`
-
-```
+```bash
 admin namespaces list ${TENANT}
 ```
 
-> 🖥️ Output
+> 🖥️ `lab1-05 output`
 >
 > ```
 > trollsquad-abcdefghijkl/default
 >```
 
-- ✅ Show topics in `pulsar-shell` (empty)
+#### `✅.lab1-06`- Show topics in `pulsar-shell` (empty)
 
 ```bash
 admin topics list ${TENANT}/default
 ```
 
-- ✅ Create topics `rr-raw-in`, `rr-hotel-reviews` `rr-restaurant-reviews` `rr-restaurant-anomalies`.
+> 🖥️ `lab1-06 output`
+>
+> ```
+> <empty>
+>```
+
+#### `✅.lab1-07`- Create topics `rr-raw-in`, `rr-hotel-reviews` `rr-restaurant-reviews` `rr-restaurant-anomalies`.
 
 You can create topics through the user interface following this [official documentation](https://docs.datastax.com/en/astra-streaming/docs/astream-quick-start.html#create-a-topic) and [awesome-astra](https://awesome-astra.github.io/docs/pages/astra/create-topic/). 
 
 But here we will keep leveraging on `pulsar-shell`.
 
-```
+```bash
 admin topics create persistent://${TENANT}/default/rr-raw-in
 admin topics create persistent://${TENANT}/default/rr-hotel-reviews
 admin topics create persistent://${TENANT}/default/rr-restaurant-reviews
 admin topics create persistent://${TENANT}/default/rr-restaurant-anomalies
-```
-
-- ✅ Show topics
-
-```
 admin topics list ${TENANT}/default
 ```
 
-> 🖥️ Output
->
+> 🖥️ `lab1-07 output`
 > ```
 > persistent://trollsquad-pk6oztya8/default/rr-raw-in
 > persistent://trollsquad-pk6oztya8/default/rr-restaurant-anomalies
@@ -427,18 +437,23 @@ admin topics list ${TENANT}/default
 > persistent://trollsquad-pk6oztya8/default/rr-restaurant-reviews
 > ```
 
-- ✅ Exit
+#### `✅.lab1-08` -  Exit `pulsar-shell`
 
-```
+```bash
 exit
 ```
 
-- ✅ Show your topic `rr-raw-in` in Astra User Interface:
+#### `✅.lab1-09`- Show your topic `rr-raw-in` in Astra User Interface:
 
 ```
 ORGID=`astra org id`
 gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-raw-in/1/0/overview
 ```
+
+> 🖥️ `lab1-09 output`
+>
+> ![pic](images/pic-astratoken.png)
+
 
 #### 1.3 Start injector (producer)
 
@@ -667,5 +682,5 @@ admin sinks create \
 
 ```
 
-#### 3.2 Access Database
 
+## Homework
