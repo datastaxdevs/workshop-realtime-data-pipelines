@@ -27,11 +27,6 @@ Welcome to the *RealTime data pipeline with Apache Pulsar and Apache Cassandra**
   - [Injector Component](#injector-component)
   - [Analyzer Component](#analyzer-component)
 - [**Setup - Initialize your environment**](#setup---initialize-your-environment)
-  - [S.1 Start Gitpod IDE](#-s1-start-gitpod-ide)
-  - [S.2 Create Astra Account](#-s2-create-astra-account)
-  - [S.3 Create Astra Credentials (token)](#-s3-create-astra-credentials-token)
-  - [S.4 Setup `Astra CLI`](#-s4-setup-astra-cli)
-  - [S.5 Create your database](#-s5-create-your-database)
 - [**LAB1 - Producer and Consumer**](#)
   - [1.1 Start your tenant](#)
   - [1.2 Create topics](#)
@@ -202,38 +197,32 @@ score given in the review.
 
 ## Setup - Initialize your environment
 
-### S.1 Start Gitpod IDE
+#### `✅.001`- Open Gitpod
 
 Gitpod is an IDE based on VSCode deployed in the cloud.
 
-#### `✅.001`- Open Gitpod
 
 > ↗️ _Right Click and select open as a new Tab..._
 
 <a href="https://gitpod.io/#https://github.com/datastaxdevs/workshop-realtime-data-pipelines"><img src="https://dabuttonfactory.com/button.png?t=Open+Gitpod&f=Open+Sans-Bold&ts=16&tc=fff&hp=20&vp=10&c=11&bgt=unicolored&bgc=0b5394" /></a>
 
-### S.2 Create Astra Account
+#### `✅.002`- Create your Astra Account: Following web page opened by gitpod or follow this link
 
 _**`ASTRA`** is the simplest way to run both Cassandra and Pulsat with zero operations at all - just push the button and get your clusters. No credit card required_
 
 Leveraging [Database creation guide](https://awesome-astra.github.io/docs/pages/astra/create-instance/#c-procedure) create a database. *Right-Click the button* with *Open in a new TAB.*
 
-#### `✅.002`- Following web page opened by gitpod or follow this link
-
 The Astra registration page should have opened with Gitpod, if not use [this link](https://astra.dev/yt-9-14).
 
-### S.3 Create Astra Credentials (token)
-
-
-#### `✅.003`- Create an application token by following <a href="https://awesome-astra.github.io/docs/pages/astra/create-token/" target="_blank">these instructions</a>. 
+#### `✅.003`- reate Astra Credentials (token): Create an application token by following <a href="https://awesome-astra.github.io/docs/pages/astra/create-token/" target="_blank">these instructions</a>. 
 
 Skip this step is you already have a token. You can reuse the same token in our other workshops, too.
 
 > Your token should look like: `AstraCS:....`
 
-#### ✅ S.4 Setup Astra CLI
+#### `✅.004`- Setup Astra CLI
 
-Go back to your gitpod terminal waiting for your token.
+Go back to your gitpod terminal waiting for your token. Provide the value where it is asked
 
 > 🖥️ Output
 >
