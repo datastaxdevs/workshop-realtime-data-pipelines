@@ -430,10 +430,10 @@ admin topics list ${TENANT}/default
 
 > 🖥️ `lab1-07 output`
 > ```
-> persistent://trollsquad-pk6oztya8/default/rr-raw-in
-> persistent://trollsquad-pk6oztya8/default/rr-restaurant-anomalies
-> persistent://trollsquad-pk6oztya8/default/rr-hotel-reviews
-> persistent://trollsquad-pk6oztya8/default/rr-restaurant-reviews
+> persistent://trollsquad-abcdefghi/default/rr-raw-in
+> persistent://trollsquad-abcdefghi/default/rr-restaurant-anomalies
+> persistent://trollsquad-abcdefghi/default/rr-hotel-reviews
+> persistent://trollsquad-abcdefghi/default/rr-restaurant-reviews
 > ```
 
 Let's dig into what those topics are used for. The will be populated one after this other moving across the labs.
@@ -446,42 +446,13 @@ Let's dig into what those topics are used for. The will be populated one after t
 | `rr-restaurant-anomalies`| The analyzer will reject reviews there|
 
 
-
 #### `✅.lab1-08` -  Exit `pulsar-shell`
 
 ```bash
 exit
 ```
 
-#### `✅.lab1-09`- Show your topics on the user interface
-
-```
-ORGID=`astra org id`
-gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/
-```
-
-Sometimes you have to hard refresh or click `topics` tab again. Notice the ellipsis to expand the list of topics if not present.
-
-> 🖥️ `lab1-09 output`
->
-> ![pic](images/pic-topics.png)
-
-
-#### `✅.lab1-10`- Show your topic `rr-raw-in` in Astra User Interface:
-
-```
-ORGID=`astra org id`
-gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-raw-in/1/0/overview
-```
-
-> 🖥️ `lab1-09 output`
->
-> ![pic](images/pic-astratoken.png)
-
-
-#### 1.3 Start injector (producer)
-
-- Create `.env` as configuration file
+#### `✅.lab1-09`- Create `.env` as configuration file
 
 ```
 cp .env.sample .env
@@ -494,55 +465,118 @@ PULSAR_TOKEN=`astra streaming pulsar-token ${TENANT}`
 echo "PULSAR_TOKEN=\"${PULSAR_TOKEN}\"" >> .env
 ORGID=`astra org id`
 echo "ORGID=\"${ORGID}\"" >> .env
-
+set -a
+source .env
+set +a
 tail -5 .env
 ```
+> 🖥️ `lab1-09 output`
+> ```
+> gitpod /workspace/workshop-realtime-data-pipelines (main) $ tail -5 .env
+> ASTRA_DB_ID="3ed83de7-d97f-4fb6-bf9f-82e9f7eafa23"
+> ASTRA_DB_APP_TOKEN="AstraCS:gdZaqzmFZ************"
+> TENANT="trollsquad-abcdefghi"
+> PULSAR_TOKEN="eyJhbGciOiJSUzI1**********"
+> ORGID="f9460f14-9879-4ebe-83f2-48d3f3dce13c"
+> ```
 
-- Start the generator
+#### `✅.lab1-10`- Show your topics on the user interface
 
 ```
+gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/
+```
+
+Sometimes you have to hard refresh or click `topics` tab again. Notice the ellipsis to expand the list of topics if not present.
+
+> 🖥️ `lab1-10 output`
+>
+> ![pic](images/pic-topics.png)
+
+
+#### `✅.lab1-11`- Show your topic `rr-raw-in` in Astra User Interface:
+
+```
+gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-raw-in/1/0/overview
+```
+
+> 🖥️ `lab1-011 output`
+>
+> ![pic](images/pic-rr-raw-in)
+
+
+#### `✅.lab1-12`- Start the generator
+
+```bash
 /workspace/workshop-realtime-data-pipelines/revGenerator/review_generator.py -r 10
 ```
 
-- Show producer on the UI
+> 🖥️ `lab1-012 output`
+>
+> ```
+> 2022-09-13 10:36:24.243 INFO  [140097656701568] ClientConnection:189 | [<none> -> pulsar+ssl://pulsar-aws-useast2.streaming.datastax.com:6651] Create ClientConnection, timeout=10000
+> 2022-09-13 10:36:24.249 INFO  [140097656701568] ConnectionPool:96 | Created connection for pulsar+ssl://pulsar-aws-useast2.streaming.datastax.com:6651
+> 2022-09-13 10:36:24.349 INFO  [140097629259520] ClientConnection:375 | [10.0.5.2:49564 -> 3.138.177.230:6651] Connected to broker
+> 2022-09-13 10:36:24.818 INFO  [140097629259520] HandlerBase:64 | [persistent://trollsquad-pk6oztya8/default/rr-raw-in, ] Getting connection from pool
+> 2022-09-13 10:36:24.910 INFO  [140097629259520] ClientConnection:189 | [<none> -> pulsar+ssl://pulsar-aws-useast2.streaming.datastax.com:6651] Create ClientConnection, timeout=10000
+> 2022-09-13 10:36:24.915 INFO  [140097629259520] ConnectionPool:96 | Created connection for pulsar://192.168.69.127:6650
+> 2022-09-13 10:36:25.016 INFO  [140097629259520] ClientConnection:377 | [10.0.5.2:56960 -> 18.223.216.1:6651] Connected to broker through proxy. Logical broker: pulsar://192.168.69.127:6650
+> 2022-09-13 10:36:25.482 INFO  [140097629259520] ProducerImpl:189 | [persistent://trollsquad-pk6oztya8/default/rr-raw-in, ] Created producer on broker [10.0.5.2:56960 -> 18.223.216.1:6651] 
+> * 0 ... [{"u_id": "geri", "score": 9.3, "review_type": "hotel", "item_id": "slpsnd", "item_name": "SleepSound", "text": "we terrible disgusting unsatisfactory cooked terrible", "idx": 0}]
+> * 1 ... [a5VH40D^L625Z98b1BKTN@N2aCEQN=VXQTD0IaYPK[RXbZVOQZJGP2`Y;^5OZ@:EE]
+> * 2 ... [{"u_id": "botz", "score": 9.600000000000001, "review_type": "hotel", "item_id": "slpsnd", "item_name": "SleepSound", "text": "excellent excellent delicious ordinary dish with is tasty", "idx": 2}]
+> * 3 ... [{"u_id": "botz", "score": 9.1, "item_id": "eat_st", "item_name": "EatNStay", "text": "excellent the is excellent ordinary ordinary eating", "idx": 3}]
+> ....
+> ```
+
+#### `✅.lab1-13`- Start `pulsar-shell`
 
 ```
-set -a
-source .env
-set +a
-gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-raw-in/1/0/producers
+source /home/gitpod/.astra/cli/astra-init.sh
+astra streaming  pulsar-shell ${TENANT}
 ```
 
-#### 1.4 Visualize messages (consumer)
+> 🖥️ `lab1-013 output`
+>
+> ```
+> /home/gitpod/.astra/lunastreaming-shell-2.10.1.1/conf/client-aws-useast2-trollsquad-pk6oztya8.conf
+> Pulsar-shell is starting please wait for connection establishment...
+> Using directory: /home/gitpod/.pulsar-shell
+> Welcome to Pulsar shell!
+>   Service URL: pulsar+ssl://pulsar-aws-useast2.streaming.datastax.com:6651
+>   Admin URL: https://pulsar-aws-useast2.api.streaming.datastax.com
+> 
+> Type help to get started or try the autocompletion (TAB button).
+> Type exit or quit to end the shell session.
+>
+> default(pulsar-aws-useast2.streaming.datastax.com)> 
+> ```
 
-Locate terminal `consumer` or open a new one with shorcut `CONTROL^ + SHIFT + ``.
+#### `✅.lab1-14`- Visualize messages with a consumer using `client`
 
-- Load environment variables and start pulsar shell
-
-```
-set -a
-source .env
-set +a
-astra streaming ${TENANT} pulsar-shell
-```
-
-- Launch a consumer in the console
-
-```
+```bash
 client consume persistent://${TENANT}/default/rr-raw-in -s consume_log -n 0
 ```
 
-- Show Consumers in the Astra User Interface
-
-```
-gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-raw-in/1/0/consumers
-```
+> 🖥️ `lab1-014 output`
+>
+> ```
+> 2022-09-13T10:49:04,150+0000 [pulsar-client-io-1-1] INFO  org.apache.pulsar.client.impl.ConnectionPool - [[id: 0xf990e737, L:/10.0.5.2:54496 - R:pulsar-aws-useast2.streaming.datastax.com/3.16.119.226:6651]] Connected to server
+> 2022-09-13T10:49:04,709+0000 [pulsar-client-io-1-1] INFO  org.apache.pulsar.client.impl.ConsumerStatsRecorderImpl - Starting Pulsar consumer status recorder with config: {"topicNames":["persistent://trollsquad-pk6oztya8/default/rr-raw-in"],"topicsPattern":null,"subscriptionName":"consume_log","subscriptionType":"Exclusive","subscriptionProperties":null,"subscriptionMode":"Durable","receiverQueueSize":1000,"acknowledgementsGroupTimeMicros":100000,"negativeAckRedeliveryDelayMicros":60000000,"maxTotalReceiverQueueSizeAcrossPartitions":50000,"consumerName":null,"ackTimeoutMillis":0,"tickDurationMillis":1000,"priorityLevel":0,"maxPendingChunkedMessage":10,"autoAckOldestChunkedMessageOnQueueFull":false,"expireTimeOfIncompleteChunkedMessageMillis":60000,"cryptoFailureAction":"FAIL","properties":{},"readCompacted":false,"subscriptionInitialPosition":"Latest","patternAutoDiscoveryPeriod":60,"regexSubscriptionMode":"PersistentOnly","deadLetterPolicy":null,"retryEnable":false,"autoUpdatePartitions":true,"autoUpdatePartitionsIntervalSeconds":60,"replicateSubscriptionState":false,"resetIncludeHead":false,"keySharedPolicy":null,"batchIndexAckEnabled":false,"ackReceiptEnabled":false,"poolMessages":true,"startPaused":false,"maxPendingChuckedMessage":10}
+> ...
+> 2022-09-13T10:49:59,192+0000 [pulsar-client-io-1-1] INFO  org.apache.pulsar.client.impl.ConsumerImpl - [persistent://trollsquad-pk6oztya8/default/rr-raw-in][consume_log] Subscribing to topic on cnx [id: 0x797d8d1d, L:/10.0.5.2:50876 - R:pulsar-aws-useast2.streaming.datastax.com/3.138.177.230:6651], consumerId 0
+> 2022-09-13T10:49:59,288+0000 [pulsar-client-io-1-1] INFO  org.apache.pulsar.client.impl.ConsumerImpl - [persistent://trollsquad-pk6oztya8/default/rr-raw-in][consume_log] Subscribed to topic on pulsar-aws-useast2.streaming.datastax.com/3.138.177.230:6651 -- consumer: 0
+> 2022-09-13T10:49:59,395+0000 [pulsar-client-io-1-1] INFO  com.scurrilous.circe.checksum.Crc32cIntChecksum - SSE4.2 CRC32C provider initialized
+> ----- got message -----
+> key:[null], properties:[], content:{"user_id": "geri", "score": 5.0, "review_type": "restaurant", "item_id": "vegg00", "item_name": "VeggieParadise", "text": "roast risotto risotto eating for for dish", "idx": 1171}
+> ----- got message -----
+> key:[null], properties:[], content:{"user_id": "botz", "score": 7.300000000000001, "review_type": "restaurant", "item_id": "gold_f", "item_name": "Golden Fork", "text": "with we ordinary we with cooked we ordinary", "idx": 1172}
+> ```
 
 ## LAB2 - Pulsar functions
 
 #### 2.1 Create function
 
-```
+```bash
 gp open /workspace/workshop-realtime-data-pipelines/pulsar_routing_function/review_router.py
 sed -i "s/___TENANT___/${TENANT}/" /workspace/workshop-realtime-data-pipelines/pulsar_routing_function/review_router.py
 ```
