@@ -528,7 +528,12 @@ gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-a
 > ....
 > ```
 
+
 #### `✅.lab1-13`- Start `pulsar-shell`
+
+For now on the first terminal will be busy with the generator. As such move to the second terminal called `2_consumer`
+
+![](images/pic-bash2.png)
 
 ```
 source /home/gitpod/.astra/cli/astra-init.sh
@@ -576,37 +581,70 @@ We can kill this consumer with `CTRL + C`.
 
 ## LAB2 - Pulsar functions
 
-#### 2.1 Create function
+For now both terminal will 1 and 2 be busy with the generator. As such move to the second terminal called `3_analyzer`
+
+![](images/pic-bash3.png)
+
+
+#### `✅.lab2-01`- Locate and setup the function
 
 ```bash
+set -a
+source .env
+set +a
 gp open /workspace/workshop-realtime-data-pipelines/pulsar_routing_function/review_router.py
 sed -i "s/___TENANT___/${TENANT}/" /workspace/workshop-realtime-data-pipelines/pulsar_routing_function/review_router.py
 ```
 
-#### 2.2 Deploy function
+> 🖥️ `lab2-01 output`
+>
+> Before `sed`:
+> ![pic](images/sed-before.png)
+> 
+> After `sed`:
+> ![](images/sed-after.png)
 
-When creating the function through the Astra Streaming UI:
+#### `✅.lab2-02`- Start Pulsar Shell (again)
 
-- Name = `rrouter-function`, namespace = `default`;
-- upload the `pulsar_routing_function/review_router.py` and pick the `ReviewRouter` function name;
-- input topic: `default` and `rr-raw-in`;
-- leave output/log topics empty;
-- do not touch Advanced Configuration;
-- no need for any further option configuration. Hit "Create".
-
-The function will display as "Initializing" in the listing for some time
-(20 s perhaps), then "Running". You're all set now.
-
-- Access Pulsar-shell
-
-```
+```bash
+source /home/gitpod/.astra/cli/astra-init.sh
 astra streaming pulsar-shell ${TENANT}
 ```
 
-- List functions
-```
+> 🖥️ `lab2-02 output`
+> ``` 
+> /home/gitpod/.astra/lunastreaming-shell-2.10.1.1/conf/client-aws-useast2-trollsquad-abcdefghi.conf
+> Pulsar-shell is starting please wait for connection establishment...
+> Using directory: /home/gitpod/.pulsar-shell
+> Welcome to Pulsar shell!
+>   Service URL: pulsar+ssl://pulsar-aws-useast2.streaming.datastax.com:6651
+>  Admin URL: https://pulsar-aws-useast2.api.streaming.datastax.com
+> 
+> Type help to get started or try the autocompletion (TAB button).
+> Type exit or quit to end the shell session.
+> 
+> default(pulsar-aws-useast2.streaming.datastax.com)> 
+
+#### `✅.lab2-03`- List functions in `pulsar-shell`
+
+```bash
 admin functions list --tenant=${TENANT} --namespace=default
 ```
+
+> 🖥️ `lab2-03 output`
+> ```
+> <empty>
+> ```
+
+> **Note**:*If you need to delete a function you can also leverage on the `admin` command to do so:*
+> ```bash
+> admin functions delete \
+>     --name rrouter-function 
+>     --tenant=${TENANT} 
+>     --namespace=default
+>```
+
+#### `✅.lab2-04`- Create the Pulsar-function
 
 ```bash
 admin functions create \
@@ -618,13 +656,28 @@ admin functions create \
   --inputs persistent://${TENANT}/default/rr-raw-in
 ```
 
+> 🖥️ `lab2-04 output`
+> ```
+> Created successfully
+> ```
+
+
+#### `✅.lab2-05`- List functions in `pulsar-shell`
+
 ```bash
 admin functions list --tenant=${TENANT} --namespace=default
+exit
 ```
 
-- You should have items in `rr-hotel-reviews` and `rr-restaurant-reviews` now. 
+> 🖥️ `lab2-05 output`
+> ```
+> rrouter-function
+> ```
 
-```
+
+#### `✅.lab2-06`- Check on topics `rr-hotel-reviews` and `rr-restaurant-reviews`
+
+```bash
 gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-hotel-reviews/1/0
 ```
 
