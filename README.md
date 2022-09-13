@@ -27,21 +27,22 @@ Welcome to the *RealTime data pipeline with Apache Pulsar and Apache Cassandra**
   - [Injector Component](#injector-component)
   - [Analyzer Component](#analyzer-component)
 - [**Setup - Initialize your environment**](#setup---initialize-your-environment)
-  - [S.1 Create Astra Account](#-s1-create-astra-account)
-  - [S.2 Create Astra Credentials (token)](s#-s2-create-astra-credentials-token)
-  - [S.3 Start Gitpod IDE](#-s3-start-gitpod-ide)
-  - [S.4 Setup `Astra CLI`](#-s4--setup-astra-cli)
+  - [S.1 Start Gitpod IDE](#-s1-start-gitpod-ide)
+  - [S.2 Create Astra Account](#-s2-create-astra-account)
+  - [S.3 Create Astra Credentials (token)](#-s3-create-astra-credentials-token)
+  - [S.4 Setup `Astra CLI`](#-s4-setup-astra-cli)
+  - [S.5 Create your database](#-s5-create-your-database)
 - [**LAB1 - Producer and Consumer**](#)
-  - [1.1 Create tenant](#)
+  - [1.1 Start your tenant](#)
   - [1.2 Create topics](#)
   - [1.3 Start injector (producer)](#)
   - [1.4 Visualize messages (consumer)](#)
 - [**LAB2 - Pulsar functions**](#)  
   - [2.1 Create function](#)
   - [2.2 Deploy function](#)
-  - [2.3 Run Demo](#)
+  - [2.3 Run Analyzer](#)
   - [2.4 Access Database](#)
-- [**LAB3 - Pulsar Sinks and Analyzer**](#)  
+- [**LAB3 - Pulsar I/O**](#)  
   - [3.1 Setup sink](#)
   - [3.2 Access Database](#)
 - [Homework](#7-homework)
@@ -201,26 +202,30 @@ score given in the review.
 
 ## Setup - Initialize your environment
 
-#### ✅ S.1 Start Gitpod IDE
+### S.1 Start Gitpod IDE
 
 Gitpod is an IDE based on VSCode deployed in the cloud.
+
+#### `✅.001`- Open Gitpod
 
 > ↗️ _Right Click and select open as a new Tab..._
 
 <a href="https://gitpod.io/#https://github.com/datastaxdevs/workshop-realtime-data-pipelines"><img src="https://dabuttonfactory.com/button.png?t=Open+Gitpod&f=Open+Sans-Bold&ts=16&tc=fff&hp=20&vp=10&c=11&bgt=unicolored&bgc=0b5394" /></a>
 
-#### ✅ S.2 Create Astra Account
+### S.2 Create Astra Account
 
 _**`ASTRA`** is the simplest way to run both Cassandra and Pulsat with zero operations at all - just push the button and get your clusters. No credit card required_
 
 Leveraging [Database creation guide](https://awesome-astra.github.io/docs/pages/astra/create-instance/#c-procedure) create a database. *Right-Click the button* with *Open in a new TAB.*
 
+#### `✅.002`- Following web page opened by gitpod or follow this link
+
 The Astra registration page should have opened with Gitpod, if not use [this link](https://astra.dev/yt-9-14).
 
+### S.3 Create Astra Credentials (token)
 
-#### ✅ S.3 Create Astra Credentials (token)
 
-Create an application token by following <a href="https://awesome-astra.github.io/docs/pages/astra/create-token/" target="_blank">these instructions</a>. 
+#### `✅.003`- Create an application token by following <a href="https://awesome-astra.github.io/docs/pages/astra/create-token/" target="_blank">these instructions</a>. 
 
 Skip this step is you already have a token. You can reuse the same token in our other workshops, too.
 
@@ -692,5 +697,16 @@ Cqlsh is starting please wait for connection establishment...
 
  What is, each time a data is inserted in a topic is ti copy in the db
 
+#### 3.1 Setup sink
 
 https://docs.datastax.com/en/astra-streaming/docs/astream-astradb-sink.html
+
+https://pulsar.apache.org/docs/io-cli#sinks
+
+```
+admin sinks create \
+
+```
+
+#### 3.2 Access Database
+
