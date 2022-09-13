@@ -18,42 +18,12 @@ configs:
   auth:
     provider: None
     username: token
-    password: "AstraCS:gdZaqzmFZszaBTOlLgeecuPs:edd25600df1c01506f5388340f138f277cece2c93cb70f4b5fa386490daa5d44"
+    password: "__TOKEN__"
     gssapi:
       keyTab:
       principal:
       service: dse
   topic:
-#    mytopicrawjson:
-#      mykeyspace:
-#        user:
-#          mapping: 'name=value.name,age=value.age,surname=value.surname'
-#          consistencyLevel: LOCAL_ONE
-#          ttl: -1
-#          ttlTimeUnit : SECONDS
-#          timestampTimeUnit : MICROSECONDS
-#          nullToUnset: true
-#          deletesEnabled: true
-#    mytopicudt:
-#      mykeyspace:
-#        mytable2:
-#          mapping: 'name=value.name,age=value.age,surname=value.surname,udtcol=value.udt'
-#          consistencyLevel: LOCAL_ONE
-#          ttl: -1
-#          ttlTimeUnit : SECONDS
-#          timestampTimeUnit : MICROSECONDS
-#          nullToUnset: true
-#          deletesEnabled: true
-#    mytopic7:
-#      mykeyspace:
-#        user:
-#          mapping: 'name=value.name,age=value.age,surname=value.surname'
-#          consistencyLevel: LOCAL_ONE
-#          ttl: -1
-#          ttlTimeUnit : SECONDS
-#          timestampTimeUnit : MICROSECONDS
-#          nullToUnset: true
-#          deletesEnabled: true
     rr-restaurant-anomalies:
       trollsquad:
         msg_rr_restaurant_anomalies:

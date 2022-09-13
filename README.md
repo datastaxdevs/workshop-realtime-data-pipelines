@@ -1113,16 +1113,31 @@ astra db cqlsh workshops -e "select * FROM trollsquad.msg_rr_restaurant_anomalie
 
 #### `✅.lab4-04`- Create a Sink with the CLI
 
+- Get SCB
+
+```bash
+export SCB=`base64 /home/gitpod/.astra/scb/scb_3ed83de7-d97f-4fb6-bf9f-82e9f7eafa23_eu-west-1.zip`
+
 - Start `pulsar-shell`
 
+```bash
+astra streaming pulsar-shell ${TENANT}
 ```
+
+- TODO
+
+Replace SCB URL and TOKEN in SINK CONFIG FILE
+
+- Create the sink
+
+```bash
 admin sinks create \
-   --name sink-with-cli
-   -t cassandra-enhanced
-   --sink-config-file /workspace/workshop-realtime-data-pipelines/tools/config-sink.yaml
-
-
-
+   --name sink-with-cli \
+   --tenant ${TENANT} \
+   --namespace default \
+   -t cassandra-enhanced \
+   -i persistent://${TENANT}/default/rr-restaurant-anomalies \
+  --sink-config-file /workspace/workshop-realtime-data-pipelines/tools/config-sink.yaml
 ```
 
 
