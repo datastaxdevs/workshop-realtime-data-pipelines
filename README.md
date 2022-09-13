@@ -224,6 +224,8 @@ Skip this step is you already have a token. You can reuse the same token in our 
 
 Go back to your gitpod terminal waiting for your token. Provide the value where it is asked
 
+![pic](images/pic-astratoken.png)
+
 > 🖥️ Output
 >
 > ```
