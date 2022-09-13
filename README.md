@@ -312,15 +312,18 @@ astra db get workshops
 > +------------------------+-----------------------------------------+
 > ```
 
+*Congratulations your environment is all set, let's start the labs !*
+
 ## LAB1 - Producer and Consumer
 
-> **Note**: Your tenant name must start with a lowercase alphabetic character. It can only contain lowercase alphanumeric characters, and hyphens (kebab-case), and the maximum length is 25.
 
 #### `✅.lab1-01`- Generate an unique tenant name
 
-A tenant name should also BE UNIQUE IN ALL CLUSTER. So to get a unique name let's generate one randomly.
+> **Note**: Your tenant name must start with a lowercase alphabetic character. It can only contain lowercase alphanumeric characters, and hyphens (kebab-case), and the maximum length is 25.
 
-```
+A tenant name should BE UNIQUE IN ALL CLUSTER. So to get a unique name let's generate one randomly.
+
+```bash
 export TENANT="trollsquad-$(tr -dc a-z0-9 </dev/urandom | head -c 9 ; echo '')"
 echo $TENANT
 ```
@@ -400,7 +403,7 @@ admin namespaces list ${TENANT}
 > 🖥️ `lab1-05 output`
 >
 > ```
-> trollsquad-abcdefghijkl/default
+> trollsquad-abcdefghi/default
 >```
 
 #### `✅.lab1-06`- Show topics in `pulsar-shell` (empty)
@@ -415,11 +418,7 @@ admin topics list ${TENANT}/default
 > <empty>
 >```
 
-#### `✅.lab1-07`- Create topics `rr-raw-in`, `rr-hotel-reviews` `rr-restaurant-reviews` `rr-restaurant-anomalies`.
-
-You can create topics through the user interface following this [official documentation](https://docs.datastax.com/en/astra-streaming/docs/astream-quick-start.html#create-a-topic) and [awesome-astra](https://awesome-astra.github.io/docs/pages/astra/create-topic/). 
-
-But here we will keep leveraging on `pulsar-shell`.
+#### `✅.lab1-07`- Create our 4 working topics 
 
 ```bash
 admin topics create persistent://${TENANT}/default/rr-raw-in
@@ -437,13 +436,38 @@ admin topics list ${TENANT}/default
 > persistent://trollsquad-pk6oztya8/default/rr-restaurant-reviews
 > ```
 
+Let's dig into what those topics are used for. The will be populated one after this other moving across the labs.
+
+| Title | description |
+|----|-----|
+| `rr-raw-in`| Will get inputs from injector|
+| `rr-hotel-reviews`| Pulsar function router will put hotels reviews there|
+| `rr-restaurant-reviews`| Pulsar function router will put restaurants reviews there|
+| `rr-restaurant-anomalies`| The analyzer will reject reviews there|
+
+
+
 #### `✅.lab1-08` -  Exit `pulsar-shell`
 
 ```bash
 exit
 ```
 
-#### `✅.lab1-09`- Show your topic `rr-raw-in` in Astra User Interface:
+#### `✅.lab1-09`- Show your topics on the user interface
+
+```
+ORGID=`astra org id`
+gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/
+```
+
+Sometimes you have to hard refresh or click `topics` tab again. Notice the ellipsis to expand the list of topics if not present.
+
+> 🖥️ `lab1-09 output`
+>
+> ![pic](images/pic-topics.png)
+
+
+#### `✅.lab1-10`- Show your topic `rr-raw-in` in Astra User Interface:
 
 ```
 ORGID=`astra org id`
