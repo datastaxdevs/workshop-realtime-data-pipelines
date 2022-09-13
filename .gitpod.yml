@@ -1,5 +1,5 @@
 tasks:
-  - name: producer
+  - name: 1_producer
     before: |
       printf 'export PATH="$HOME%s:$PATH"\n' "/.astra/cli" >> $HOME/.bashrc
       printf 'unset JAVA_TOOL_OPTIONS\n' >> $HOME/.bashrc
@@ -15,16 +15,45 @@ tasks:
     command: |
       unset JAVA_TOOL_OPTIONS
       source /home/gitpod/.astra/cli/astra-init.sh
-      clear
-      echo "Ready to thrive"
       export PYTHONPATH="/workspace/workshop-realtime-data-pipelines/:$PYTHONPATH"
       gp preview --external https://astra.dev/yt-9-14
       astra setup
-  - name: consumer
+  - name: 2_consumer
     command: |
+      unset JAVA_TOOL_OPTIONS
+      export PYTHONPATH="/workspace/workshop-realtime-data-pipelines/:$PYTHONPATH"
+      source /home/gitpod/.astra/cli/astra-init.sh
+      clear
       echo "***************"
       echo "** Consumer ***"
       echo "***************"
+  - name: 3_analyzer
+    command: |
+      unset JAVA_TOOL_OPTIONS
+      export PYTHONPATH="/workspace/workshop-realtime-data-pipelines/:$PYTHONPATH"
+      source /home/gitpod/.astra/cli/astra-init.sh
+      clear
+      echo "***************"
+      echo "** Analyzer ***"
+      echo "***************"
+  - name: 4_reader
+    command: |
+      unset JAVA_TOOL_OPTIONS
+      export PYTHONPATH="/workspace/workshop-realtime-data-pipelines/:$PYTHONPATH"
+      source /home/gitpod/.astra/cli/astra-init.sh
+      clear
+      echo "***************"
+      echo "** Analyzer ***"
+      echo "***************"
+  - name: 5_database
+    command: |
+      unset JAVA_TOOL_OPTIONS
+      export PYTHONPATH="/workspace/workshop-realtime-data-pipelines/:$PYTHONPATH"
+      source /home/gitpod/.astra/cli/astra-init.sh
+      clear
+      echo "***************"
+      echo "** Analyzer ***"
+      echo "***************"           
 ports:
   - port: 8080
     onOpen: open-browser

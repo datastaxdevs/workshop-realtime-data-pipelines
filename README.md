@@ -40,10 +40,10 @@ Welcome to the *RealTime data pipeline with Apache Pulsar and Apache Cassandra**
   - [2.1 Create function](#)
   - [2.2 Deploy function](#)
   - [2.3 Run Demo](#)
+  - [2.4 Access Database](#)
 - [**LAB3 - Pulsar Sinks and Analyzer**](#)  
-  - [3.1 Create DB](#)
-  - [3.2 Create Schema](#)
-  - [3.3 Setup sink](#)
+  - [3.1 Setup sink](#)
+  - [3.2 Access Database](#)
 - [Homework](#7-homework)
 - [What's NEXT ](#8-whats-next-)
 <p>
@@ -495,24 +495,18 @@ echo "ORGID=\"${ORGID}\"" >> .env
 tail -5 .env
 ```
 
-- Install dependencies
-
-```
-set -a
-source .env
-set +a
-pip install -r requirements.txt
-```
-
 - Start the generator
 
 ```
-./revGenerator/review_generator.py -r 10
+/workspace/workshop-realtime-data-pipelines/revGenerator/review_generator.py -r 10
 ```
 
 - Show producer on the UI
 
 ```
+set -a
+source .env
+set +a
 gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-raw-in/1/0/producers
 ```
 
@@ -546,8 +540,8 @@ gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-a
 #### 2.1 Create function
 
 ```
-sed 's/___TENANT___/${TENANT}/' ./pulsar_routing_function/review_router.py
-cat ./pulsar_routing_function/review_router.py | grep ${TENANT}
+gp open /workspace/workshop-realtime-data-pipelines/pulsar_routing_function/review_router.py
+sed -i "s/___TENANT___/${TENANT}/" /workspace/workshop-realtime-data-pipelines/pulsar_routing_function/review_router.py
 ```
 
 #### 2.2 Deploy function
@@ -564,62 +558,65 @@ When creating the function through the Astra Streaming UI:
 The function will display as "Initializing" in the listing for some time
 (20 s perhaps), then "Running". You're all set now.
 
+- Access Pulsar-shell
 
-```bash
+```
+astra streaming pulsar-shell ${TENANT}
+```
+
+- List functions
+```
 admin functions list --tenant=${TENANT} --namespace=default
 ```
 
 ```bash
 admin functions create \
-  --py ./pulsar_routing_function/review_router.py \
+  --py /workspace/workshop-realtime-data-pipelines/pulsar_routing_function/review_router.py \
   --classname review_router.ReviewRouter \
   --tenant ${TENANT} \
   --namespace default \
   --name rrouter-function \
-  --inputs rr-raw-in
+  --inputs persistent://${TENANT}/default/rr-raw-in
 ```
 
 ```bash
 admin functions list --tenant=${TENANT} --namespace=default
 ```
 
-```bash
-admin functions delete \
-  --tenant ${TENANT} \
-  --namespace default \
-  --name rrouter-function
+- You should have items in `rr-hotel-reviews` and `rr-restaurant-reviews` now. 
+
+```
+gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-hotel-reviews/1/0
 ```
 
-- Show Restaurant Reviews
+```
+gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-restaurant-reviews/1/0
+```
+
+- Check content with consumer
+
+```
+client consume persistent://${TENANT}/default/rr-restaurant-reviews -s consume_log -n 0
+```
 
 #### 2.3 Run Analyzer
 
-https://docs.datastax.com/en/astra-streaming/docs/astream-astradb-sink.html
-
-
-> into the other topics as well. But if you are using Astra Streaming you may
-> as well want to explore the "Try Me!" feature available directly in the Web UI,
-> which allows to read and write items by hand from/to Astra Streaming topics.
-
-Now start in rapid succession these three commands in the three shells and
-enjoy the show:
-
-# second shell
-```
-./revAnalyzer/review_analyzer.py -r -o -t -f 200
-```
-
-# third shell
+- Start Analyzer in shell `analyzer`
 
 ```
-./tools/reader.py -t rr-restaurant-anomalies
+/workspace/workshop-realtime-data-pipelines/revAnalyzer/review_analyzer.py -r -o -t -f 200
+```
+
+- Start reader to log anomalies in shell `reader`
+
+```
+/workspace/workshop-realtime-data-pipelines/tools/reader.py -t rr-restaurant-anomalies
 ```
 
 _Note_: you can customize the behaviour of those commands - try passing `-h`
 to the scripts to see what is available.
 
-### Querying the database
-
+#### 2.4 Query the Database
 
 The only missing piece at this point are direct database queries. You can access
 the tables in any way you want, for instance using the
@@ -634,55 +631,66 @@ just inspect the `trollsquad` keyspace and try to `SELECT` rows from the tables 
 _Note:_ you just have to create the keyspace, since every time the analyzer starts
 it checks for the tables and, if they do not exist, it creates them for you.
 
-### Astra DB REST API
-
-One of the nice things of Astra DB is that you effortlessly get various ways to interact
-with your database through ordinary HTTP requests through
-the [Stargate Data API](https://stargate.io/) on top of the underlying database.
-
-The following examples are run with `cURL`, but of course they can be adapted
-to any client able to issue simple HTTPS requests.
-
-First source the `.env` file in a shell and construct the full base URL used in the subsequent requests:
-```
-. .env
-ASTRA_URL_ROOT="https://${ASTRA_DB_ID}-${ASTRA_DB_REGION}.apps.astra.datastax.com/api/rest/v1/keyspaces/${ASTRA_DB_KEYSPACE}/tables"
-```
-
-then try to run the following commands one by one and wee what the result looks like:
+- ✅ What restaurants can be queried?
 
 ```
-# What restaurants can be queried?
-curl -s -X GET \
-    "${ASTRA_URL_ROOT}/known_ids_per_type/rows/restaurant" \
-    -H "accept: application/json" \
-    -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
-
-
-# What reviewers can be queried?
-curl -s -X GET \
-    "${ASTRA_URL_ROOT}/known_ids_per_type/rows/reviewer" \
-    -H "accept: application/json" \
-    -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
-
-
-# What's the current status of a restaurant?
-curl -s -X GET \
-    "${ASTRA_URL_ROOT}/restaurants_by_id/rows/vegg00" \
-    -H "accept: application/json" \
-    -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
-
-
-# What's the current status of a reviewer?
-curl -s -X GET \
-    "${ASTRA_URL_ROOT}/reviewers_by_id/rows/geri" \
-    -H "accept: application/json" \
-    -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
-
-
-# What is the timeline of reviews for a restaurant?
-curl -s -X GET \
-    "${ASTRA_URL_ROOT}/restaurants_by_id_time/rows/gold_f" \
-    -H "accept: application/json" \
-    -H "X-Cassandra-Token: ${ASTRA_DB_APP_TOKEN}" | python -mjson.tool
+astra db cqlsh workshops \
+   -e "select * from trollsquad.known_ids_per_type where id_type='restaurant'"
 ```
+
+- ✅ What reviewers can be queried?
+
+```
+astra db cqlsh workshops \
+   -e "select * from trollsquad.known_ids_per_type where id_type='reviewer'"
+```
+
+- ✅ What's the current status of a restaurant?
+
+```
+astra db cqlsh workshops \
+   -e "select * from trollsquad.restaurants_by_id where id='vegg00'"
+```
+
+- ✅ What's the current status of a reviewer?
+
+```
+astra db cqlsh workshops \
+   -e "select * from trollsquad.reviewers_by_id where id='geri'"
+```
+
+- ✅ What is the timeline of reviews for a restaurant?
+
+```
+astra db cqlsh workshops \
+   -e "select * from trollsquad.restaurants_by_id_time where id='gold_f'"
+```
+
+```
+
+Cqlsh is starting please wait for connection establishment...
+
+ id     | time                            | average | name
+--------+---------------------------------+---------+-------------
+ gold_f | 2022-09-13 00:48:51.481000+0000 | 5.14027 | Golden Fork
+ gold_f | 2022-09-13 00:48:52.782000+0000 | 4.02716 | Golden Fork
+ gold_f | 2022-09-13 00:48:59.465000+0000 |  2.9716 | Golden Fork
+ gold_f | 2022-09-13 00:49:01.645000+0000 | 4.91724 | Golden Fork
+ gold_f | 2022-09-13 00:49:03.377000+0000 | 4.09476 | Golden Fork
+ gold_f | 2022-09-13 00:49:05.156000+0000 | 3.31554 | Golden Fork
+ gold_f | 2022-09-13 00:49:06.902000+0000 | 4.79082 | Golden Fork
+ gold_f | 2022-09-13 00:49:08.588000+0000 | 3.13101 | Golden Fork
+ gold_f | 2022-09-13 00:49:10.141000+0000 | 4.96983 | Golden Fork
+ gold_f | 2022-09-13 00:49:12.284000+0000 | 4.87864 | Golden Fork
+ gold_f | 2022-09-13 00:49:13.722000+0000 | 4.18713 | Golden Fork
+ gold_f | 2022-09-13 00:49:15.501000+0000 |  2.9564 | Golden Fork
+ ```
+
+ ### LAB3 - Pulsar I/O
+
+ We used a standalone analyzer to create the tables and populate values.
+
+ What is, each time a data is inserted in a topic is ti copy in the db
+
+
+https://docs.datastax.com/en/astra-streaming/docs/astream-astradb-sink.html
