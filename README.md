@@ -1113,10 +1113,17 @@ astra db cqlsh workshops -e "select * FROM trollsquad.msg_rr_restaurant_anomalie
 
 #### `✅.lab4-04`- Create a Sink with the CLI
 
-- Get SCB
+- Replace SCB URL and TOKEN in SINK CONFIG FILE
 
-```bash
-export SCB=`base64 /home/gitpod/.astra/scb/scb_3ed83de7-d97f-4fb6-bf9f-82e9f7eafa23_eu-west-1.zip`
+> **TODO `astra db scb-download-url` does not exist**
+
+```
+ASTRA_DB_APP_TOKEN=`astra config get default --key ASTRA_DB_APPLICATION_TOKEN`
+sed -i "s/__TOKEN__/${ASTRA_DB_APP_TOKEN}/" /workspace/workshop-realtime-data-pipelines/tools/config-sink.yaml
+
+ASTRA_SCB_URL=`astra db scb-download-url workshops`
+sed -i "s/__SCB__/${ASTRA_SCB_URL}/" /workspace/workshop-realtime-data-pipelines/tools/config-sink.yaml
+```
 
 - Start `pulsar-shell`
 
@@ -1124,9 +1131,6 @@ export SCB=`base64 /home/gitpod/.astra/scb/scb_3ed83de7-d97f-4fb6-bf9f-82e9f7eaf
 astra streaming pulsar-shell ${TENANT}
 ```
 
-- TODO
-
-Replace SCB URL and TOKEN in SINK CONFIG FILE
 
 - Create the sink
 
