@@ -27,19 +27,10 @@ Welcome to the *RealTime data pipeline with Apache Pulsar and Apache Cassandra**
   - [Injector Component](#injector-component)
   - [Analyzer Component](#analyzer-component)
 - [**Setup - Initialize your environment**](#setup---initialize-your-environment)
-- [**LAB1 - Producer and Consumer**](#)
-  - [1.1 Start your tenant](#)
-  - [1.2 Create topics](#)
-  - [1.3 Start injector (producer)](#)
-  - [1.4 Visualize messages (consumer)](#)
-- [**LAB2 - Pulsar functions**](#)  
-  - [2.1 Create function](#)
-  - [2.2 Deploy function](#)
-  - [2.3 Run Analyzer](#)
-  - [2.4 Access Database](#)
-- [**LAB3 - Pulsar I/O**](#)  
-  - [3.1 Setup sink](#)
-  - [3.2 Access Database](#)
+- [LAB1 - Producer and Consumer](#lab1---producer-and-consumer)
+- [LAB2 - Pulsar functions](#lab2---pulsar-functions)
+- [LAB3 - Working with Database](#)
+- [LAB4 - Pulsar I/O](#)
 - [Homework](#7-homework)
 - [What's NEXT ](#8-whats-next-)
 <p>
@@ -197,7 +188,7 @@ score given in the review.
 
 ## Setup - Initialize your environment
 
-#### `✅.001`- Open Gitpod
+#### `✅.setup-01`- Open Gitpod
 
 Gitpod is an IDE based on VSCode deployed in the cloud.
 
@@ -206,7 +197,7 @@ Gitpod is an IDE based on VSCode deployed in the cloud.
 
 <a href="https://gitpod.io/#https://github.com/datastaxdevs/workshop-realtime-data-pipelines"><img src="https://dabuttonfactory.com/button.png?t=Open+Gitpod&f=Open+Sans-Bold&ts=16&tc=fff&hp=20&vp=10&c=11&bgt=unicolored&bgc=0b5394" /></a>
 
-#### `✅.002`- Create your Astra Account: Following web page opened by gitpod or follow this link
+#### `✅.setup-02`- Create your Astra Account: Following web page opened by gitpod or follow this link
 
 _**`ASTRA`** is the simplest way to run both Cassandra and Pulsat with zero operations at all - just push the button and get your clusters. No credit card required_
 
@@ -214,13 +205,13 @@ Leveraging [Database creation guide](https://awesome-astra.github.io/docs/pages/
 
 The Astra registration page should have opened with Gitpod, if not use [this link](https://astra.dev/yt-9-14).
 
-#### `✅.003`- reate Astra Credentials (token): Create an application token by following <a href="https://awesome-astra.github.io/docs/pages/astra/create-token/" target="_blank">these instructions</a>. 
+#### `✅.setup-03`- Create Astra Credentials (token): Create an application token by following <a href="https://awesome-astra.github.io/docs/pages/astra/create-token/" target="_blank">these instructions</a>. 
 
 Skip this step is you already have a token. You can reuse the same token in our other workshops, too.
 
 > Your token should look like: `AstraCS:....`
 
-#### `✅.004`- Setup Astra CLI
+#### `✅.setup-04`- Setup Astra CLI
 
 Go back to your gitpod terminal waiting for your token. Provide the value where it is asked
 
@@ -229,25 +220,6 @@ Go back to your gitpod terminal waiting for your token. Provide the value where 
 > 🖥️ Output
 >
 > ```
-> +-------------------------------+
-> +-     Astra CLI SETUP         -+
-> +-------------------------------+
-> 
-> Welcome to Astra Cli. We will guide you to start.
-> 
-> [Astra Setup]
-> To use the cli you need to:
- > • Create an Astra account on : https://astra.datastax.com
- > • Create an Authentication token following: https://dtsx.io/create-astra-token
-> 
-> [Cli Setup]
-> You will be asked to enter your token, it will be saved locally in ~/. astrarc
-> 
-> • Enter your token (starting with AstraCS) : 
-> AstraCS:AAAAAA
-> [ INFO ] - Configuration Saved.
-> 
-> 
 > [cedrick.lunven@gmail.com]
 > ASTRA_DB_APPLICATION_TOKEN=AstraCS:AAAAAAAA
 > 
@@ -260,9 +232,9 @@ Go back to your gitpod terminal waiting for your token. Provide the value where 
 > Happy Coding !
 > ```
 
-- List your existing Users.
+#### `✅.setup-05`- List your existing Users.
 
-```
+```bash
 astra user list
 ```
 
@@ -276,11 +248,9 @@ astra user list
 > +--------------------------------------+-----------------------------+---------------------+
 > ```
 
-#### ✅ S.5 Create your database
+#### `✅.setup-06`- Create database `workshops` and keyspace `trollsquad` if they do not exist:
 
-- Create database `workshops` and keyspace `trollsquad` if they do not exist:
-
-```
+```bash
 astra db create workshops -k trollsquad --if-not-exist --wait
 ```
 
@@ -303,9 +273,9 @@ Let's analyze the command:
 >[ INFO ] - Database 'workshops' has status 'ACTIVE' (took 7983 millis)
 > ```
 
-- ✅ Check the status of database `workshops`
+#### `✅.setup-07`- Check the status of database `workshops`
 
-```
+```bash
 astra db status workshops
 ```
 
@@ -315,9 +285,9 @@ astra db status workshops
 > [ INFO ] - Database 'workshops' has status 'ACTIVE'
 > ```
 
-- ✅ Get the informations for your database including the keyspace list
+#### `✅.setup-08`- Get the informations for your database including the keyspace list
 
-```
+```bash
 astra db get workshops
 ```
 
@@ -345,11 +315,9 @@ astra db get workshops
 
 ## LAB1 - Producer and Consumer
 
-#### 1.1 Create tenant
-
 > **Note**: Your tenant name must start with a lowercase alphabetic character. It can only contain lowercase alphanumeric characters, and hyphens (kebab-case), and the maximum length is 25.
 
-- ✅ Generate an unique tenant name
+#### `✅.lab1-01`- Generate an unique tenant name
 
 A tenant name should also BE UNIQUE IN ALL CLUSTER. So to get a unique name let's generate one randomly.
 
@@ -531,7 +499,7 @@ client consume persistent://${TENANT}/default/rr-raw-in -s consume_log -n 0
 gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-raw-in/1/0/consumers
 ```
 
-### LAB2 - Pulsar functions
+## LAB2 - Pulsar functions
 
 #### 2.1 Create function
 
@@ -612,7 +580,7 @@ client consume persistent://${TENANT}/default/rr-restaurant-reviews -s consume_l
 _Note_: you can customize the behaviour of those commands - try passing `-h`
 to the scripts to see what is available.
 
-#### 2.4 Query the Database
+## LAB3 - Working with databases
 
 The only missing piece at this point are direct database queries. You can access
 the tables in any way you want, for instance using the
@@ -682,7 +650,7 @@ Cqlsh is starting please wait for connection establishment...
  gold_f | 2022-09-13 00:49:15.501000+0000 |  2.9564 | Golden Fork
  ```
 
- ### LAB3 - Pulsar I/O
+ ## LAB4 - Pulsar I/O
 
  We used a standalone analyzer to create the tables and populate values.
 
