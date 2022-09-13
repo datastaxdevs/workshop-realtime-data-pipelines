@@ -875,7 +875,7 @@ astra db cqlsh workshops \
    -e "select * from trollsquad.known_ids_per_type where id_type='restaurant'"
 ```
 
-> 🖥️ `lab3-01 output (2)`
+> 🖥️ `lab3-02 output`
 > ```sql
 >  id_type    | ids
 > ------------+--------------------------------
@@ -889,12 +889,27 @@ astra db cqlsh workshops \
    -e "select * from trollsquad.known_ids_per_type where id_type='reviewer'"
 ```
 
+> 🖥️ `lab3-03 output`
+> ```sql
+>  id_type    | ids
+> ------------+--------------------------------
+>  reviewer | {'anne', 'botz', 'geri', 'john', 'rita'}
+> ```
+
 #### `✅.lab3-04`- What's the current status of a restaurant?
 
 ```bash
 astra db cqlsh workshops \
    -e "select * from trollsquad.restaurants_by_id where id='vegg00'"
 ```
+
+> 🖥️ `lab3-04 output`
+> ```sql
+> id     | average | hits | name           | num_outliers
+> --------+---------+------+----------------+--------------
+>  vegg00 | 1.93489 |   57 | VeggieParadise |            0
+>
+> ```
 
 #### `✅.lab3-05`- What's the current status of a reviewer?
 
@@ -903,6 +918,14 @@ astra db cqlsh workshops \
    -e "select * from trollsquad.reviewers_by_id where id='geri'"
 ```
 
+> 🖥️ `lab3-05 output`
+> ```sql
+>  id   | hits | num_outliers | target_map                  | trollings
+> ------+------+--------------+-----------------------------+-----------
+> geri |   83 |            0 | {'gold_f': 16, 'vegg00': 4} |        63
+>
+> ```
+
 #### `✅.lab3-06`- What is the timeline of reviews for a restaurant?
 
 ```bash
@@ -910,37 +933,195 @@ astra db cqlsh workshops \
    -e "select * from trollsquad.restaurants_by_id_time where id='gold_f'"
 ```
 
+> 🖥️ `lab3-05 output`
+> ```sql
+> id     | time                            | average | name
+> --------+---------------------------------+---------+-------------
+>  gold_f | 2022-09-13 00:48:51.481000+0000 | 5.14027 | Golden Fork
+>  gold_f | 2022-09-13 00:48:52.782000+0000 | 4.02716 | Golden Fork
+>  gold_f | 2022-09-13 00:48:59.465000+0000 |  2.9716 | Golden Fork
+>  gold_f | 2022-09-13 00:49:01.645000+0000 | 4.91724 | Golden Fork
+>  gold_f | 2022-09-13 00:49:03.377000+0000 | 4.09476 | Golden Fork
+>  gold_f | 2022-09-13 00:49:05.156000+0000 | 3.31554 | Golden Fork
+>  gold_f | 2022-09-13 00:49:06.902000+0000 | 4.79082 | Golden Fork
+>  gold_f | 2022-09-13 00:49:08.588000+0000 | 3.13101 | Golden Fork
+>  gold_f | 2022-09-13 00:49:10.141000+0000 | 4.96983 | Golden Fork
+>  gold_f | 2022-09-13 00:49:12.284000+0000 | 4.87864 | Golden Fork
+>  gold_f | 2022-09-13 00:49:13.722000+0000 | 4.18713 | Golden Fork
+>  gold_f | 2022-09-13 00:49:15.501000+0000 |  2.9564 | Golden Fork
+> ```
+
+## LAB4 - Pulsar I/O
+
+We used a standalone analyzer to create the tables and populate values. What if, each time a data is inserted in a topic is ti copy in the db.
+
+#### `✅.lab4-01`- Analyzing message syntax in `rr-restaurant-anomalies`
+
+- Start Pulsar-shell again
+
+```bash
+astra streaming pulsar-shell ${TENANT}
+```
+
+- Consume a couple of messages in `rr-restaurant-anomalies` (the analyzer should be running)
+
+```bash
+client consume persistent://${TENANT}/default/rr-restaurant-anomalies -s log -n 5
+```
+
+- Look at message structure
+
+```json
+{ 
+  "user_id": "geri", 
+  "r_score": 5.7, 
+  "tgt_name": "Golden Fork", 
+  "tgt_id": "gold_f", 
+  "r_text": "dish the the is dish with we", 
+  "idx": 17845,  
+  "detected_by": "review_analyzer.py"
+}
+```
+
+Let us do a couple of assumptions:
+- idx ensute unicity of a record
+- we want to search by user
+
 ```sql
- id     | time                            | average | name
---------+---------------------------------+---------+-------------
- gold_f | 2022-09-13 00:48:51.481000+0000 | 5.14027 | Golden Fork
- gold_f | 2022-09-13 00:48:52.782000+0000 | 4.02716 | Golden Fork
- gold_f | 2022-09-13 00:48:59.465000+0000 |  2.9716 | Golden Fork
- gold_f | 2022-09-13 00:49:01.645000+0000 | 4.91724 | Golden Fork
- gold_f | 2022-09-13 00:49:03.377000+0000 | 4.09476 | Golden Fork
- gold_f | 2022-09-13 00:49:05.156000+0000 | 3.31554 | Golden Fork
- gold_f | 2022-09-13 00:49:06.902000+0000 | 4.79082 | Golden Fork
- gold_f | 2022-09-13 00:49:08.588000+0000 | 3.13101 | Golden Fork
- gold_f | 2022-09-13 00:49:10.141000+0000 | 4.96983 | Golden Fork
- gold_f | 2022-09-13 00:49:12.284000+0000 | 4.87864 | Golden Fork
- gold_f | 2022-09-13 00:49:13.722000+0000 | 4.18713 | Golden Fork
- gold_f | 2022-09-13 00:49:15.501000+0000 |  2.9564 | Golden Fork
- ```
+CREATE TABLE IF NOT EXISTS trollsquad.msg_rr_restaurant_anomalies (
+     user_id  text,
+     idx      int,
+     r_score  double,
+     tgt_name text,
+     tgt_id   text,
+     r_text   text,
+     detected_by text,
+     PRIMARY KEY (user_id, idx)
+) WITH CLUSTERING ORDER BY (idx ASC);
+```
 
- ## LAB4 - Pulsar I/O
+#### `✅.lab4-02`- Create the associated Table
 
- We used a standalone analyzer to create the tables and populate values.
+- Create the table through CQL
 
- What is, each time a data is inserted in a topic is ti copy in the db
+```bash
+astra db cqlsh workshops -e "CREATE TABLE IF NOT EXISTS trollsquad.msg_rr_restaurant_anomalies ( \
+      user_id  text, \
+      idx      int, \
+      r_score  double, 
+      tgt_name text,\
+      tgt_id   text,\
+      r_text   text,\
+      detected_by text,\
+      PRIMARY KEY (user_id, idx)\
+  ) WITH CLUSTERING ORDER BY (idx ASC);"
+```
 
-#### 3.1 Setup sink
+- Check table now exist
 
-https://docs.datastax.com/en/astra-streaming/docs/astream-astradb-sink.html
+```bash
+astra db cqlsh workshops -e "describe table trollsquad.msg_rr_restaurant_anomalies;"
+```
 
-https://pulsar.apache.org/docs/io-cli#sinks
+- Check content of the table
+
+```bash
+astra db cqlsh workshops -e "select * FROM trollsquad.msg_rr_restaurant_anomalies LIMIT 10;"
+```
+
+#### `✅.lab4-03`- Create a Sink with the user interface
+
+> **Note**:[Reference Documentation](https://docs.datastax.com/en/astra-streaming/docs/astream-astradb-sink.html)
+
+- In the dashboard of your tenant, locate the tab `Sinks` and select button `{Create Sink]`.
+
+![](images/create-sink-01.png)
+
+- Enter General attributes (part 1)
+
+| Attribute | Value | Description |
+| --------- | ----- | ----------- |
+| Namespace | `default` | The namespace we work with from the beginning |
+| Sink Type | `Astra DB` | You can define external systems but here we stay in Astra |
+| Name  | `sink-anomalies` | Pick anything unique, here reminding the source topic |
+| Topic | `rr-restaurant-anomalies` | The one we decided to save |
+
+![](images/create-sink-02.png)
+
+- Get your token value. You need to remind the token we used today, the first entry your provided:
+
+```bash
+astra config get default --key ASTRA_DB_APPLICATION_TOKEN
+```
+
+- Enter Database attributes (part 2)
+
+| Attribute | Value | Description |
+| --------- | ----- | ----------- |
+| Database | `workshops` | db created it in the beginning |
+| Keyspace | `trollsquad` | keyspace we created in the beginning |
+| TableName | `msg_rr_restaurant_anomalies` | Table we created before |
+| Token | `<your_token>` | Do not copy-paste the value but use YOUR token. |
+
+And for Mapping. It is a mapping 1 to 1 from message attributes to db columns.
+
+```csv
+user_id=value.user_id,idx=value.idx,r_score=value.r_score,tgt_name=value.tgt_name,tgt_id=value.tgt_id,r_text=value.r_text,detected_by=value.detected_by
+```
+
+![](images/create-sink-03.png)
+
+- It was the last entries you can now click the `[Create]` button
+
+![](images/create-sink-04.png)
+
+- The sink will take a few second to start
+
+![](images/create-sink-05.png)
+
+- When it is ready the status will switch to `running`
+
+![](images/create-sink-06.png)
+
+- You can get the details by clicking on the sink name in the table
+
+![](images/create-sink-07.png)
+
+
+#### `✅.lab4-04`- Query the destination table 
+
+
+```bash
+astra db cqlsh workshops -e "select * FROM trollsquad.msg_rr_restaurant_anomalies LIMIT 10;"
+```
+
+> 🖥️ `lab4-04 output`
+> ```sql
+> user_id | idx   | detected_by        | r_score | r_text                                                  | tgt_id | tgt_name
+>---------+-------+--------------------+---------+---------------------------------------------------------+--------+----------------
+>    anne | 18745 | review_analyzer.py |     6.2 |                                 is ordinary we dish the | vegg00 | VeggieParadise
+>    anne | 20587 | review_analyzer.py |     1.5 |         ordinary unsatisfactory with is eating terrible | gold_f |    Golden Fork
+>    anne | 20754 | review_analyzer.py |     8.7 |                        superb superb eating ordinary is | gold_f |    Golden Fork
+>    anne | 21476 | review_analyzer.py |     1.4 |        with disgusting the vomit despicable with we the | gold_f |    Golden Fork
+>    anne | 28864 | review_analyzer.py |     4.2 |        with roast with we eating the ordinary we eating | pizzas |    Pizza Smile
+>    botz | 18741 | review_analyzer.py |     5.6 | risotto cooked ordinary roast roast ordinary we risotto | vegg00 | VeggieParadise
+>    botz | 19905 | review_analyzer.py |     5.1 |     with eating we with roast eating the eating risotto | pizzas |    Pizza Smile
+>    botz | 28670 | review_analyzer.py |       0 |     unsatisfactory dish vomit dish vomit vomit ordinary | gold_f |    Golden Fork
+>    botz | 28758 | review_analyzer.py |     7.6 |                                 tasty with we delicious | gold_f |    Golden Fork
+> ```
+
+
+#### `✅.lab4-04`- Create a Sink with the CLI
+
+- Start `pulsar-shell`
 
 ```
 admin sinks create \
+   --name sink-with-cli
+   -t cassandra-enhanced
+   --sink-config-file /workspace/workshop-realtime-data-pipelines/tools/config-sink.yaml
+
+
 
 ```
 
