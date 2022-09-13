@@ -501,7 +501,7 @@ gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-a
 
 > 🖥️ `lab1-011 output`
 >
-> ![pic](images/pic-rr-raw-in)
+> ![pic](images/pic-rr-raw-in.png)
 
 
 #### `✅.lab1-12`- Start the generator
@@ -571,6 +571,8 @@ client consume persistent://${TENANT}/default/rr-raw-in -s consume_log -n 0
 > ----- got message -----
 > key:[null], properties:[], content:{"user_id": "botz", "score": 7.300000000000001, "review_type": "restaurant", "item_id": "gold_f", "item_name": "Golden Fork", "text": "with we ordinary we with cooked we ordinary", "idx": 1172}
 > ```
+
+We can kill this consumer with `CTRL + C`. 
 
 ## LAB2 - Pulsar functions
 
