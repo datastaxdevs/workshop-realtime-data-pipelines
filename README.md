@@ -759,7 +759,7 @@ set +a
 >                  [gold_f  25239]   "Golden Fork"      : 3.66   (outliers:      4/    64)
 >                  [pizzas  25239]   "Pizza Smile"      : 0.67   (outliers:      0/    55)
 >                  [vegg00  25239]   "VeggieParadise"   : 1.93   (outliers:      0/    57)
-[ 25239] Reviewer Summary:
+> [ 25239] Reviewer Summary:
 >                    "anne"  25239 : troll-score = 0.00 (outliers:      2 /     42). Visits: gold_f(18), pizzas(12), vegg00(12)
 >                    "botz"  25239 : troll-score = 0.00 (outliers:      2 /     43). Visits: gold_f(13), pizzas(14), vegg00(16)
 >                    "geri"  25239 : troll-score = 0.66 (outliers:      0 /     41). Visits: gold_f(12), vegg00(2)
