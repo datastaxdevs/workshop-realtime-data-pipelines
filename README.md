@@ -130,7 +130,7 @@ _Reviews of various venues (hotels/restaurants), written by various users, keep 
 <summary><b> Show Details</b></summary>
 <p>
 There is a pseudorandom procedure to generate reviews with features that fluctuate in a predictable
-way: it is all in the `revGenerator` directory.
+way: it is all in the <b>revGenerator</b> directory.
 
 There is no "time" in the generation: to keep things simple, we use a "sequence index" in place of
 time. Also, some of the "reviews" are not even valid JSON strings but contain gibberish instead,
@@ -167,7 +167,7 @@ disagreement with the numeric score in the review.
 <details>
 <summary><b> Show Details</b></summary>
 <p>
-On the **analyzer side**, the reconstructed rolling average roughly follows the "true" quality for
+On the <b>analyzer side</b>, the reconstructed rolling average roughly follows the "true" quality for
 a venue, and is used to detect "outliers": each review that differs too much from the current rolling
 average is deemed an outlier. Here the rolling average corresponding to the above restaurant is plotted:
 
