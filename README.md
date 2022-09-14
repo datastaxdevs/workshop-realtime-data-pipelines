@@ -147,6 +147,7 @@ Each reviewer has an associate amplitude that dictates how widely the scores the
 may fluctuate away from the "true" value for that venue at that "time": in this example, the individual
 scores emitted by two different reviewers, having a large and small associated amplitude, are plotted:
 
+
 <img src="./images/plots/02_reviews.png"  width="600px" />
 
 While reviews by Rita will presumably all fall in the "expected" region around the current average,
@@ -198,7 +199,7 @@ Gitpod is an IDE based on VSCode deployed in the cloud.
 
 #### `✅.setup-02`- Create your Astra Account: Following web page opened by gitpod or follow this link
 
-_**`ASTRA`** is the simplest way to run both Cassandra and Pulsat with zero operations at all - just push the button and get your clusters. No credit card required_
+_**`ASTRA`** is the simplest way to run both Cassandra and Pulsar with zero operations at all - just push the button and get your clusters. No credit card required_
 
 Leveraging [Database creation guide](https://awesome-astra.github.io/docs/pages/astra/create-instance/#c-procedure) create a database. *Right-Click the button* with *Open in a new TAB.*
 
@@ -212,7 +213,7 @@ Skip this step is you already have a token. You can reuse the same token in our 
 
 #### `✅.setup-04`- Setup Astra CLI
 
-Go back to your gitpod terminal waiting for your token. Provide the value where it is asked
+Go back to your gitpod terminal waiting for your token. Make sure you select the `1_producer` shell in the bottom-right panel and provide the value where it is asked.
 
 ![pic](images/pic-astratoken.png)
 
@@ -418,13 +419,35 @@ admin topics list ${TENANT}/default
 > <empty>
 >```
 
-#### `✅.lab1-07`- Create our 4 working topics 
+#### `✅.lab1-07`- Create our 4 working topics, one command after the other.
+
+- `rr-raw-in`
 
 ```bash
 admin topics create persistent://${TENANT}/default/rr-raw-in
+```
+
+- `rr-hotel-reviews`
+
+```
 admin topics create persistent://${TENANT}/default/rr-hotel-reviews
+```
+
+- `rr-restaurant-reviews`
+
+```
 admin topics create persistent://${TENANT}/default/rr-restaurant-reviews
+```
+
+- `rr-restaurant-anomalies`
+
+```
 admin topics create persistent://${TENANT}/default/rr-restaurant-anomalies
+```
+
+- List the topics
+
+```
 admin topics list ${TENANT}/default
 ```
 
@@ -470,6 +493,10 @@ source .env
 set +a
 tail -5 .env
 ```
+
+> **Note**: If your DB `workshops` existed before this session and was not started on region `us-east-1` you will have to edit `.env` changing the key `ASTRA_DB_REGION`
+
+
 > 🖥️ `lab1-09 output`
 > ```
 > gitpod /workspace/workshop-realtime-data-pipelines (main) $ tail -5 .env
@@ -481,6 +508,8 @@ tail -5 .env
 > ```
 
 #### `✅.lab1-10`- Show your topics on the user interface
+
+> **Note**: You need to be logged in to Astra". Make sure you have not being autologout before issueing the command
 
 ```
 gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/
