@@ -707,19 +707,25 @@ exit
 
 #### `✅.lab2-06`- Check on topics `rr-hotel-reviews` and `rr-restaurant-reviews`
 
+- Hotels
+
 ```bash
 gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-hotel-reviews/1/0
 ```
+
+> 🖥️ `lab2-06 output-1`
+> 
+> Hotels: 
+> ![](images/pic-hotel-reviews.png)
+
+- Restaurants
 
 ```
 gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/rr-restaurant-reviews/1/0
 ```
 
-> 🖥️ `lab2-06 output`
+> 🖥️ `lab2-06 output-2`
 > 
-> Hotels: 
-> ![](images/pic-hotel-reviews.png)
->
 > Restaurants: 
 > ![](images/pic-restaurant-reviews.png)
 
@@ -757,6 +763,12 @@ client consume persistent://${TENANT}/default/rr-restaurant-reviews -s consume_l
 >    "idx": 20179
 >  }
 > ```
+
+- Exit `pulsar-shell`
+
+```bash
+exit
+```
 
 #### `✅.lab2-08`- Run Analyzer
 
@@ -851,7 +863,7 @@ set +a
 
 ## LAB3 - Working with databases
 
-All terminal are busy. Let us move to the terminal called `4_reader`
+All terminal are busy. Let us move to the terminal called `5_database`
 
 ![](images/pic-bash5.png)
 
@@ -861,7 +873,7 @@ The only missing piece at this point are direct database queries. You can access
 
 You will notice that the restaurant reviews are written in _two_ tables: 
 
-- one will simply contains the latest average score for each restaurant
+- one will simply contain the latest average score for each restaurant
 
 ```bash
 set -a
@@ -992,7 +1004,7 @@ astra db cqlsh workshops \
 
 ## LAB4 - Pulsar I/O
 
-We used a standalone analyzer to create the tables and populate values. What if, each time a data is inserted in a topic is ti copy in the db.
+We used a standalone analyzer to create the tables and populate values. What if, each time a data is inserted in a topic it is also copied in the db.
 
 #### `✅.lab4-01`- Analyzing message syntax in `rr-restaurant-anomalies`
 
@@ -1008,7 +1020,17 @@ astra streaming pulsar-shell ${TENANT}
 client consume persistent://${TENANT}/default/rr-restaurant-anomalies -s log -n 5
 ```
 
-- Look at message structure
+- Looking at message structure, the output look like
+
+```bashing
+
+[...]
+key:[null], properties:[], content:{"user_id": "botz", "r_score": 6.4, "tgt_name": "Pizza Smile", "tgt_id": "pizzas", "r_text": "eating is for ordinary is", "idx": 17261, "detected_by": "review_analyzer.py"}
+----- got message -----
+[...]
+```
+
+- Extracting one message and formatting as `JSON`:
 
 ```json
 { 
@@ -1023,7 +1045,7 @@ client consume persistent://${TENANT}/default/rr-restaurant-anomalies -s log -n 
 ```
 
 Let us do a couple of assumptions:
-- idx ensute unicity of a record
+- idx ensures unicity of a record
 - we want to search by user
 
 ```sql
@@ -1037,6 +1059,12 @@ CREATE TABLE IF NOT EXISTS trollsquad.msg_rr_restaurant_anomalies (
      detected_by text,
      PRIMARY KEY (user_id, idx)
 ) WITH CLUSTERING ORDER BY (idx ASC);
+```
+
+- Exit the `pulsar-shell`
+
+```bash
+exit
 ```
 
 #### `✅.lab4-02`- Create the associated Table
@@ -1072,7 +1100,7 @@ astra db cqlsh workshops -e "select * FROM trollsquad.msg_rr_restaurant_anomalie
 
 > **Note**:[Reference Documentation](https://docs.datastax.com/en/astra-streaming/docs/astream-astradb-sink.html)
 
-- In the dashboard of your tenant, locate the tab `Sinks` and select button `{Create Sink]`.
+- In the dashboard of your tenant, locate the tab `Sinks` and select button `[Create Sink]`.
 
 ![](images/create-sink-01.png)
 
@@ -1110,11 +1138,11 @@ user_id=value.user_id,idx=value.idx,r_score=value.r_score,tgt_name=value.tgt_nam
 
 ![](images/create-sink-03.png)
 
-- It was the last entries you can now click the `[Create]` button
+- These were the last entries you can now click the `[Create]` button
 
 ![](images/create-sink-04.png)
 
-- The sink will take a few second to start
+- The sink will take about a minute to initialize and start:
 
 ![](images/create-sink-05.png)
 
@@ -1149,39 +1177,6 @@ astra db cqlsh workshops -e "select * FROM trollsquad.msg_rr_restaurant_anomalie
 >    botz | 28758 | review_analyzer.py |     7.6 |                                 tasty with we delicious | gold_f |    Golden Fork
 > ```
 
-
-#### `✅.lab4-04`- Create a Sink with the CLI
-
-- Replace SCB URL and TOKEN in SINK CONFIG FILE
-
-> **TODO `astra db scb-download-url` does not exist**
-
-```
-ASTRA_DB_APP_TOKEN=`astra config get default --key ASTRA_DB_APPLICATION_TOKEN`
-sed -i "s/__TOKEN__/${ASTRA_DB_APP_TOKEN}/" /workspace/workshop-realtime-data-pipelines/tools/config-sink.yaml
-
-ASTRA_SCB_URL=`astra db scb-download-url workshops`
-sed -i "s/__SCB__/${ASTRA_SCB_URL}/" /workspace/workshop-realtime-data-pipelines/tools/config-sink.yaml
-```
-
-- Start `pulsar-shell`
-
-```bash
-astra streaming pulsar-shell ${TENANT}
-```
-
-
-- Create the sink
-
-```bash
-admin sinks create \
-   --name sink-with-cli \
-   --tenant ${TENANT} \
-   --namespace default \
-   -t cassandra-enhanced \
-   -i persistent://${TENANT}/default/rr-restaurant-anomalies \
-  --sink-config-file /workspace/workshop-realtime-data-pipelines/tools/config-sink.yaml
-```
 
 
 ## Homework
