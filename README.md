@@ -565,6 +565,9 @@ For now on the first terminal will be busy with the generator. As such move to t
 ![](images/pic-bash2.png)
 
 ```
+set -a
+source .env
+set +a
 source /home/gitpod/.astra/cli/astra-init.sh
 astra streaming  pulsar-shell ${TENANT}
 ```
