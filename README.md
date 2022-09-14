@@ -1163,20 +1163,30 @@ astra db cqlsh workshops -e "select * FROM trollsquad.msg_rr_restaurant_anomalie
 ```
 
 > 🖥️ `lab4-04 output`
-> ```sql
-> user_id | idx   | detected_by        | r_score | r_text                                                  | tgt_id | tgt_name
->---------+-------+--------------------+---------+---------------------------------------------------------+--------+----------------
->    anne | 18745 | review_analyzer.py |     6.2 |                                 is ordinary we dish the | vegg00 | VeggieParadise
->    anne | 20587 | review_analyzer.py |     1.5 |         ordinary unsatisfactory with is eating terrible | gold_f |    Golden Fork
->    anne | 20754 | review_analyzer.py |     8.7 |                        superb superb eating ordinary is | gold_f |    Golden Fork
->    anne | 21476 | review_analyzer.py |     1.4 |        with disgusting the vomit despicable with we the | gold_f |    Golden Fork
->    anne | 28864 | review_analyzer.py |     4.2 |        with roast with we eating the ordinary we eating | pizzas |    Pizza Smile
->    botz | 18741 | review_analyzer.py |     5.6 | risotto cooked ordinary roast roast ordinary we risotto | vegg00 | VeggieParadise
->    botz | 19905 | review_analyzer.py |     5.1 |     with eating we with roast eating the eating risotto | pizzas |    Pizza Smile
->    botz | 28670 | review_analyzer.py |       0 |     unsatisfactory dish vomit dish vomit vomit ordinary | gold_f |    Golden Fork
->    botz | 28758 | review_analyzer.py |     7.6 |                                 tasty with we delicious | gold_f |    Golden Fork
-> ```
-
-
+>
+> `YOUR_HOMEWORK`
 
 ## Homework
+
+To submit the **homework**, please take a screenshot in gitpod with the result of lab `✅.lab4-04`, you will have different values than the ones showed during the live.
+
+Don't forget to [submit your homework](https://dtsx.io/homework-realtime-data-pipeline) and be awarded a nice verified badge!
+
+## What's NEXT ?
+
+We've just scratched the surface of what you can do using Astra DB, built on Apache Pulsar and Cassandra.
+
+Go take a look at [DataStax for Developers](https://www.datastax.com/dev) to see what else is possible.
+
+There's plenty to dig into!
+
+Congratulations: you made to the end of today's workshop.
+
+Don't forget to [submit your homework](https://dtsx.io/homework-realtime-data-pipeline) and be awarded a nice verified badge!
+
+<img src="images/badge.png?raw=true" width="350" align="right" />
+
+**... and see you at our next workshop!**
+
+
+
