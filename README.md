@@ -1170,7 +1170,7 @@ astra db cqlsh workshops -e "select * FROM trollsquad.msg_rr_restaurant_anomalie
 
 To submit the **homework**, please take a screenshot in gitpod with the result of lab `✅.lab4-04`, you will have different values than the ones showed during the live.
 
-Don't forget to [submit your homework](https://dtsx.io/homework-realtime-data-pipeline) and be awarded a nice verified badge!
+Don't forget to [submit your homework](https://dtsx.io/homework-realtime-data-pipelines) and be awarded a nice verified badge!
 
 ## What's NEXT ?
 
@@ -1182,9 +1182,11 @@ There's plenty to dig into!
 
 Congratulations: you made to the end of today's workshop.
 
-Don't forget to [submit your homework](https://dtsx.io/homework-realtime-data-pipeline) and be awarded a nice verified badge!
+Don't forget to [submit your homework](https://dtsx.io/homework-realtime-data-pipelines) and be awarded a nice verified badge!
 
-<img src="images/badge.png?raw=true" width="350" align="right" />
+
+<img src="images/badge.png?raw=true" width="350" />
+
 
 **... and see you at our next workshop!**
 
