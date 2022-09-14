@@ -509,7 +509,7 @@ tail -5 .env
 
 #### `✅.lab1-10`- Show your topics on the user interface
 
-> **Note**: You need to be logged in to Astra". Make sure you have not being autologout before issueing the command
+> **Note**: *You need to be logged in to Astra". Make sure you have not being autologout before issueing the command*
 
 ```
 gp preview --external https://astra.datastax.com/org/${ORGID}/streaming/pulsar-aws-useast2/tenants/${TENANT}/topics/namespaces/default/topics/
