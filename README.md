@@ -670,7 +670,7 @@ admin functions list --tenant=${TENANT} --namespace=default
 
 > **Note**:*If you need to delete a function you can also leverage on the `admin` command to do so:*
 > ```bash
-> admin functions delete \
+> admin functions delete
 >     --name rrouter-function 
 >     --tenant=${TENANT} 
 >     --namespace=default
@@ -679,12 +679,12 @@ admin functions list --tenant=${TENANT} --namespace=default
 #### `✅.lab2-04`- Create the Pulsar-function
 
 ```bash
-admin functions create \
-  --py /workspace/workshop-realtime-data-pipelines/pulsar_routing_function/review_router.py \
-  --classname review_router.ReviewRouter \
-  --tenant ${TENANT} \
-  --namespace default \
-  --name rrouter-function \
+admin functions create
+  --py /workspace/workshop-realtime-data-pipelines/pulsar_routing_function/review_router.py
+  --classname review_router.ReviewRouter
+  --tenant ${TENANT}
+  --namespace default
+  --name rrouter-function
   --inputs persistent://${TENANT}/default/rr-raw-in
 ```
 
@@ -738,8 +738,15 @@ astra streaming pulsar-shell ${TENANT}
 client consume persistent://${TENANT}/default/rr-restaurant-reviews -s consume_log -n 5
 ```
 
-> 🖥️ `lab2-07 sample message`
+> 🖥️ `lab2-07 output`
 > 
+> After initialization you see messages:
+> [...]
+> ----- got message -----
+> key:[null], properties:[], content:{"user_id": "rita", "r_score": 3.9000000000000004, "tgt_name": "VeggieParadise", "tgt_id": "vegg00", "r_text": "we ordinary roast with is for for is", "idx": 9619}
+> [...]
+>
+> If we format a sample message it looks like:
 > ```json
 > { 
 >   "user_id": "geri", 
