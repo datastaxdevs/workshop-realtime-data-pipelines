@@ -211,6 +211,12 @@ Skip this step is you already have a token. You can reuse the same token in our 
 
 > Your token should look like: `AstraCS:....`
 
+> **⚠️ Important**
+> ```
+> The instructor will show you on screen how to create a token 
+> but will have to destroy to token immediately for security reasons.
+> ```
+
 #### `✅.setup-04`- Setup Astra CLI
 
 Go back to your gitpod terminal waiting for your token. Make sure you select the `1_producer` shell in the bottom-right panel and provide the value where it is asked.
