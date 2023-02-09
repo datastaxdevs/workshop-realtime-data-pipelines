@@ -1,0 +1,20 @@
+{
+  "name": "Real-Time data pipelines with Pulsar and Cassandra",
+  "description": "You will inspect and run a sample architecture making use of Apache Pulsar™ and Pulsar Functions for real-time, event-streaming-based data ingestion, cleaning and processing.",
+  "duration": "120 minutes",
+  "skillLevel": "Beginner/Intermediate",
+  "language":["python"],
+  "stack":["pulsar", "drivers"],
+  "githubUrl": "https://github.com/datastaxdevs/workshop-realtime-data-pipelines",
+  "badge": "https://media.badgr.com/uploads/badges/6e50dd8b-5e75-448b-89cc-eac1fb074d8c.png",
+  "youTubeUrl": [ "https://www.youtube.com/watch?v=AH5ETUhUCUg" ],
+  "tags": [
+    { "name": "workshop" },
+    { "name":"pulsar" },
+    { "name":"astrastreaming" },
+    { "name":"cassandra" },
+    { "name":"astradb" }
+  ],
+  "category": "workshop",
+  "usecases": ["ETL", "real-time data", "data validation", "data aggregation"]
+}
