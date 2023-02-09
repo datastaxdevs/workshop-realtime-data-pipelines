@@ -13,6 +13,8 @@
     { "name":"pulsar" },
     { "name":"astrastreaming" },
     { "name":"cassandra" },
+    { "name":"data-engineering" },
+    { "name":"data-science" },
     { "name":"astradb" }
   ],
   "category": "workshop",
